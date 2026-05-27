@@ -71,7 +71,7 @@ DIA 9–10 (fechamento)
 | AuthService (register + login + JWT) | Backend | CONCLUÍDO |
 | AuthController (/api/auth/register e /login) | Backend | CONCLUÍDO |
 | Spring Security (filtro JWT, rotas) | Backend | CONCLUÍDO |
-| Testes de integração register/login | QA | PENDENTE |
+| Testes de integração register/login | QA | CONCLUÍDO |
 
 ---
 
@@ -109,8 +109,8 @@ DIA 9–10 (fechamento)
 ## Definition of Done
 
 - [x] S-01-01: `docker compose up --build` sobe tudo sem erro
-- [ ] S-01-02: Migrations aplicadas; seeds presentes no banco ← **PENDENTE: validar docker compose**
-- [x] S-01-03: Registro/login funcionando; 401 em rotas protegidas ← código OK; **PENDENTE: testes QA**
+- [ ] S-01-02: Migrations aplicadas; seeds presentes no banco ← **PENDENTE: docker compose (Docker Desktop offline)**
+- [x] S-01-03: Registro/login funcionando; 401 em rotas protegidas ← testes QA OK (15/15 BUILD SUCCESS)
 - [x] S-01-04: Login no browser; modo claro/escuro funcionando ← build OK; **PENDENTE: teste manual**
 - [x] Testes passando: `./mvnw test` ← BUILD SUCCESS
 - [ ] Review registrada em `memory/reviews/review-sprint-01.md`
