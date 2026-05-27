@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System — Gestor de Gastos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ---- Azul pastel: cor principal ---- */
+    --blue-50:  #eef4fb;
+    --blue-100: #d9e8f7;
+    --blue-200: #b9d4ef;
+    --blue-300: #8fb9e3;
+    --blue-400: #6699d4;
+    --blue-500: #4a7fc4;   /* primária */
+    --blue-600: #3b66a3;
+    --blue-700: #2f5184;
+
+    /* ---- Apoio pastel ---- */
+    --mint:    #a8d8c8;   /* receitas / positivo */
+    --mint-d:  #5fae97;
+    --coral:   #f0a9a0;   /* despesas / atenção */
+    --coral-d: #d97c70;
+    --sand:    #f3d9a8;   /* avisos */
+    --lilac:   #c9bce3;   /* destaque suave */
+
+    --radius-sm: 10px;
+    --radius:    16px;
+    --radius-lg: 24px;
+    --shadow-sm: 0 1px 2px rgba(47,81,132,.06), 0 2px 6px rgba(47,81,132,.05);
+    --shadow:    0 4px 14px rgba(47,81,132,.09), 0 2px 6px rgba(47,81,132,.05);
+    --shadow-lg: 0 12px 32px rgba(47,81,132,.14);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  /* ---------- TEMA CLARO ---------- */
+  [data-theme="light"] {
+    --bg:       #f6f8fc;
+    --bg-soft:  #eef2f9;
+    --surface:  #ffffff;
+    --surface-2:#f9fbfe;
+    --border:   #e2e9f3;
+    --text:     #233045;
+    --text-2:   #5d6b82;
+    --text-3:   #8c98ad;
+    --primary:  var(--blue-500);
+    --primary-h:var(--blue-600);
+    --on-primary:#ffffff;
+    --pos: var(--mint-d);
+    --neg: var(--coral-d);
+    --pos-bg: #e6f4ee;
+    --neg-bg: #fbe9e6;
+    --chip-bg: var(--blue-50);
+    --chip-tx: var(--blue-700);
+  }
+  /* ---------- TEMA ESCURO ---------- */
+  [data-theme="dark"] {
+    --bg:       #131a26;
+    --bg-soft:  #0e141e;
+    --surface:  #1b2433;
+    --surface-2:#212c3d;
+    --border:   #2c3950;
+    --text:     #e7edf6;
+    --text-2:   #a4b1c6;
+    --text-3:   #6f7d94;
+    --primary:  #6ea0df;
+    --primary-h:#84b2ec;
+    --on-primary:#0e141e;
+    --pos: #7fcbb2;
+    --neg: #ef9e93;
+    --pos-bg: #1c3530;
+    --neg-bg: #38231f;
+    --chip-bg: #21304a;
+    --chip-tx: #aecbf0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    transition: background .4s ease, color .4s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Header ---------- */
+  header.top {
+    position: sticky; top: 0; z-index: 50;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top-in { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; max-width: 1080px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .logo {
+    width: 38px; height: 38px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--blue-400), var(--blue-600));
+    display: grid; place-items: center; color: #fff; font-weight: 700;
+    font-family: var(--font-display); box-shadow: var(--shadow-sm);
+  }
+  .brand b { font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; }
+  .brand small { color: var(--text-3); display: block; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; }
+
+  .toggle {
+    border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); border-radius: 999px; padding: 9px 16px;
+    font-family: var(--font-body); font-weight: 600; font-size: .85rem;
+    cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: all .25s ease; box-shadow: var(--shadow-sm);
+  }
+  .toggle:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 64px 0 32px; }
+  .hero .eyebrow {
+    display: inline-block; font-size: .78rem; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--primary);
+    background: var(--chip-bg); padding: 6px 14px; border-radius: 999px; margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.08;
+    letter-spacing: -.02em; margin-bottom: 16px;
+  }
+  .hero h1 em { font-style: italic; color: var(--primary); }
+  .hero p { font-size: 1.08rem; color: var(--text-2); max-width: 560px; }
+
+  /* ---------- Sections ---------- */
+  section.block { padding: 44px 0; border-top: 1px solid var(--border); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 28px; }
+  .sec-num {
+    font-family: var(--font-display); font-size: .9rem; color: var(--primary);
+    border: 1.5px solid var(--primary); border-radius: 8px; padding: 2px 9px; font-weight: 500;
+  }
+  .sec-head h2 { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -.01em; }
+  .sec-head p { color: var(--text-3); font-size: .92rem; margin-left: auto; max-width: 340px; text-align: right; }
+
+  /* ---------- Color swatches ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 14px; }
+  .sw { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-sm); }
+  .sw .chip { height: 76px; }
+  .sw .meta { padding: 10px 12px; }
+  .sw .meta b { font-size: .85rem; display: block; }
+  .sw .meta span { font-size: .74rem; color: var(--text-3); font-family: ui-monospace, monospace; }
+
+  /* ---------- Type scale ---------- */
+  .type-row { display: flex; align-items: baseline; gap: 20px; padding: 14px 0; border-bottom: 1px dashed var(--border); flex-wrap: wrap; }
+  .type-row:last-child { border-bottom: none; }
+  .type-row .tag { font-size: .72rem; color: var(--text-3); font-family: ui-monospace, monospace; min-width: 130px; }
+  .d1 { font-family: var(--font-display); font-weight: 600; font-size: 2.6rem; letter-spacing: -.02em; }
+  .d2 { font-family: var(--font-display); font-weight: 600; font-size: 1.7rem; }
+  .h  { font-family: var(--font-body); font-weight: 700; font-size: 1.15rem; }
+  .bd { font-family: var(--font-body); font-weight: 400; font-size: 1rem; color: var(--text-2); }
+  .cap{ font-family: var(--font-body); font-weight: 500; font-size: .8rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
+  .num{ font-family: var(--font-display); font-weight: 500; font-size: 1.9rem; }
+
+  /* ---------- Components grid ---------- */
+  .grid { display: grid; gap: 22px; }
+  .g2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 720px){ .g2 { grid-template-columns: 1fr; } .sec-head p{ display:none; } }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm);
+  }
+  .card h3 { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; margin-bottom: 4px; }
+  .card .lbl { font-size: .72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; display:block; }
+
+  /* buttons */
+  .btn { font-family: var(--font-body); font-weight: 600; font-size: .92rem; border-radius: var(--radius-sm); padding: 11px 20px; cursor: pointer; border: 1px solid transparent; transition: all .2s ease; }
+  .btn-primary { background: var(--primary); color: var(--on-primary); box-shadow: var(--shadow-sm); }
+  .btn-primary:hover { background: var(--primary-h); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-ghost { background: transparent; color: var(--primary); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--primary); background: var(--chip-bg); }
+  .btn-soft { background: var(--chip-bg); color: var(--chip-tx); }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+  /* input */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; font-family: var(--font-body); font-size: .95rem;
+    padding: 12px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    transition: all .2s ease;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--chip-bg); }
+  .field .hint { font-size: .75rem; color: var(--text-3); margin-top: 5px; }
+
+  /* chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip-el { font-size: .8rem; font-weight: 600; padding: 7px 13px; border-radius: 999px; background: var(--chip-bg); color: var(--chip-tx); border: 1px solid transparent; cursor: pointer; transition: all .2s; }
+  .chip-el.active { background: var(--primary); color: var(--on-primary); }
+  .chip-el.pos { background: var(--pos-bg); color: var(--pos); }
+  .chip-el.neg { background: var(--neg-bg); color: var(--neg); }
+
+  /* ---------- App mockups ---------- */
+  .mock { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; overflow: hidden; box-shadow: var(--shadow-lg); }
+  .mock-bar { display: flex; align-items: center; gap: 8px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .mock-bar .ttl { margin-left: 10px; font-size: .82rem; color: var(--text-3); font-weight: 600; }
+  .mock-body { padding: 22px; }
+
+  .balance { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .bal-card { flex: 1; min-width: 150px; border-radius: var(--radius); padding: 16px 18px; border: 1px solid var(--border); }
+  .bal-card .cap { margin-bottom: 8px; }
+  .bal-card .v { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; }
+  .bal-card.pos { background: var(--pos-bg); border-color: transparent; }
+  .bal-card.pos .v { color: var(--pos); }
+  .bal-card.neg { background: var(--neg-bg); border-color: transparent; }
+  .bal-card.neg .v { color: var(--neg); }
+
+  .tx { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--border); }
+  .tx:last-child { border-bottom: none; }
+  .tx .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0; }
+  .tx .info { flex: 1; min-width: 0; }
+  .tx .info b { font-size: .92rem; font-weight: 600; display: block; }
+  .tx .info small { font-size: .76rem; color: var(--text-3); }
+  .tx .amt { font-family: var(--font-display); font-weight: 600; font-size: 1rem; white-space: nowrap; }
+  .tx .amt.neg { color: var(--neg); }
+  .tx .amt.pos { color: var(--pos); }
+  .badge-parc { font-size: .68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; background: var(--chip-bg); color: var(--chip-tx); margin-left: 6px; }
+
+  .settle { border-radius: var(--radius); padding: 20px; background: linear-gradient(135deg, var(--chip-bg), color-mix(in srgb, var(--lilac) 24%, var(--surface))); border: 1px solid var(--border); }
+  .settle .who { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 10px 0; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: #fff; font-family: var(--font-display); }
+  .settle .arrow { font-size: 1.4rem; color: var(--primary); }
+  .settle .res { text-align: center; }
+  .settle .res .num { color: var(--primary); }
+
+  /* progress (orçamento) */
+  .prog-wrap { margin-top: 4px; }
+  .prog-row { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: 6px; }
+  .prog-row b { font-weight: 600; }
+  .bar { height: 9px; border-radius: 999px; background: var(--bg-soft); overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 999px; }
+
+  footer { padding: 50px 0 70px; text-align: center; color: var(--text-3); font-size: .85rem; border-top: 1px solid var(--border); }
+  .legend { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  .legend .chip-el { cursor: default; }
+</style>
+</head>
+<body data-theme="light">
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="logo">G</div>
+      <div>
+        <b>Gastos do Casal</b>
+        <small>Design System · v1</small>
+      </div>
+    </div>
+    <button class="toggle" id="themeBtn" onclick="toggleTheme()">
+      <span id="themeIcon">🌙</span> <span id="themeLabel">Modo escuro</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <span class="eyebrow">Proposta visual para aprovação</span>
+    <h1>Um app de finanças que parece <em>aconchegante</em>, não um extrato de banco.</h1>
+    <p>Tons pastéis em azul, cantos suaves e tipografia com personalidade. Veja abaixo a paleta, a tipografia e os componentes reais do app — em modo claro e escuro. Use o botão no topo para alternar.</p>
+  </div>
+
+  <!-- CORES -->
+  <section class="block">
+    <div class="sec-head">
+      <span class="sec-num">01</span>
+      <h2>Paleta de cores</h2>
+      <p>Azul como cor de confiança, com apoios pastéis para receitas, despesas e avisos.</p>
+    </div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:var(--blue-500)"></div><div class="meta"><b>Primária</b><span>#4a7fc4</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--blue-300)"></div><div class="meta"><b>Primária clara</b><span>#8fb9e3</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--blue-700)"></div><div class="meta"><b>Primária escura</b><span>#2f5184</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--mint)"></div><div class="meta"><b>Receita / positivo</b><span>#a8d8c8</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--coral)"></div><div class="meta"><b>Despesa / atenção</b><span>#f0a9a0</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sand)"></div><div class="meta"><b>Aviso</b><span>#f3d9a8</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--lilac)"></div><div class="meta"><b>Destaque</b><span>#c9bce3</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--blue-50)"></div><div class="meta"><b>Fundo suave</b><span>#eef4fb</span></div></div>
+    </div>
+  </section>
+
+  <!-- TIPOGRAFIA -->
+  <section class="block">
+    <div class="sec-head">
+      <span class="sec-num">02</span>
+      <h2>Tipografia</h2>
+      <p><b>Fraunces</b> (display, com toque editorial) para títulos e valores; <b>Plus Jakarta Sans</b> para texto e interface.</p>
+    </div>
+    <div class="type-row"><span class="tag">Fraunces · Display 1</span><span class="d1">R$ 4.280,00</span></div>
+    <div class="type-row"><span class="tag">Fraunces · Display 2</span><span class="d2">Resumo do mês</span></div>
+    <div class="type-row"><span class="tag">Jakarta · Título</span><span class="h">Adicionar lançamento</span></div>
+    <div class="type-row"><span class="tag">Jakarta · Corpo</span><span class="bd">Cada parcela entra no acerto do mês em que ela cai na fatura.</span></div>
+    <div class="type-row"><span class="tag">Jakarta · Legenda</span><span class="cap">Forma de pagamento</span></div>
+    <div class="type-row"><span class="tag">Fraunces · Número</span><span class="num">12×</span></div>
+  </section>
+
+  <!-- COMPONENTES -->
+  <section class="block">
+    <div class="sec-head">
+      <span class="sec-num">03</span>
+      <h2>Componentes base</h2>
+      <p>Botões, campos e chips com cantos suaves e foco azul acessível.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <span class="lbl">Botões</span>
+        <div class="btn-row" style="margin-bottom:14px;">
+          <button class="btn btn-primary">Salvar</button>
+          <button class="btn btn-ghost">Cancelar</button>
+          <button class="btn btn-soft">Filtrar</button>
+        </div>
+        <span class="lbl">Chips / seleção de tipo</span>
+        <div class="chips">
+          <span class="chip-el neg active" style="background:var(--neg);color:#fff;">Despesa</span>
+          <span class="chip-el pos">Receita</span>
+          <span class="chip-el">Mercado</span>
+          <span class="chip-el">Transporte</span>
+          <span class="chip-el">Lazer</span>
+        </div>
+      </div>
+      <div class="card">
+        <span class="lbl">Campos de formulário</span>
+        <div class="field">
+          <label>Descrição</label>
+          <input type="text" value="Supermercado Pão de Açúcar" />
+        </div>
+        <div class="field" style="margin-bottom:0;">
+          <label>Dividir entre</label>
+          <select><option>50 / 50 — meio a meio</option><option>Só João</option><option>Só Maria</option><option>Proporcional à renda</option></select>
+          <span class="hint">Define como o valor entra no acerto de contas.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TELAS -->
+  <section class="block">
+    <div class="sec-head">
+      <span class="sec-num">04</span>
+      <h2>Telas de exemplo</h2>
+      <p>Como os componentes se juntam nas telas reais do app.</p>
+    </div>
+
+    <div class="grid g2">
+      <!-- Dashboard -->
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="dot" style="background:var(--coral)"></span>
+          <span class="dot" style="background:var(--sand)"></span>
+          <span class="dot" style="background:var(--mint)"></span>
+          <span class="ttl">Painel · Maio 2026</span>
+        </div>
+        <div class="mock-body">
+          <div class="balance">
+            <div class="bal-card pos"><span class="cap">Receitas</span><div class="v">R$ 9.200</div></div>
+            <div class="bal-card neg"><span class="cap">Despesas</span><div class="v">R$ 6.840</div></div>
+          </div>
+          <span class="cap" style="display:block;margin-bottom:10px;">Últimos lançamentos</span>
+          <div class="tx">
+            <div class="ico" style="background:var(--neg-bg);">🛒</div>
+            <div class="info"><b>Mercado <span class="badge-parc">2/3</span></b><small>Crédito · João · 22 mai</small></div>
+            <div class="amt neg">− R$ 187,90</div>
+          </div>
+          <div class="tx">
+            <div class="ico" style="background:var(--pos-bg);">💼</div>
+            <div class="info"><b>Salário</b><small>Pix · Maria · 05 mai</small></div>
+            <div class="amt pos">+ R$ 4.600,00</div>
+          </div>
+          <div class="tx">
+            <div class="ico" style="background:var(--chip-bg);">🍿</div>
+            <div class="info"><b>Cinema</b><small>Débito · 50/50 · 18 mai</small></div>
+            <div class="amt neg">− R$ 72,00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acerto + Orçamento -->
+      <div class="mock">
+        <div class="mock-bar">
+          <span class="dot" style="background:var(--coral)"></span>
+          <span class="dot" style="background:var(--sand)"></span>
+          <span class="dot" style="background:var(--mint)"></span>
+          <span class="ttl">Acerto de contas</span>
+        </div>
+        <div class="mock-body">
+          <div class="settle">
+            <div class="who">
+              <div class="avatar" style="background:var(--blue-500)">J</div>
+              <span class="arrow">→</span>
+              <div class="avatar" style="background:var(--mint-d)">M</div>
+            </div>
+            <div class="res"><span class="cap" style="display:block">João deve a Maria</span><div class="num">R$ 312,45</div></div>
+          </div>
+          <span class="cap" style="display:block;margin:20px 0 12px;">Orçamento do mês</span>
+          <div class="prog-wrap">
+            <div class="prog-row"><b>Mercado</b><span>R$ 820 / 900</span></div>
+            <div class="bar"><span style="width:91%;background:var(--sand)"></span></div>
+          </div>
+          <div class="prog-wrap" style="margin-top:14px;">
+            <div class="prog-row"><b>Lazer</b><span>R$ 410 / 400</span></div>
+            <div class="bar"><span style="width:100%;background:var(--coral)"></span></div>
+          </div>
+          <div class="prog-wrap" style="margin-top:14px;">
+            <div class="prog-row"><b>Transporte</b><span>R$ 180 / 500</span></div>
+            <div class="bar"><span style="width:36%;background:var(--mint)"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRINCÍPIOS -->
+  <section class="block">
+    <div class="sec-head">
+      <span class="sec-num">05</span>
+      <h2>Princípios de uso</h2>
+      <p>Regras simples para manter tudo coerente quando o app crescer.</p>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Cor com significado</h3>
+        <p class="bd">Verde-menta sempre sinaliza receita/positivo; coral sinaliza despesa/atenção; azul é navegação e ações. Nunca trocar esses papéis.</p>
+        <div class="legend">
+          <span class="chip-el pos">Receita</span>
+          <span class="chip-el neg">Despesa</span>
+          <span class="chip-el">Ação</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Respiro e suavidade</h3>
+        <p class="bd">Cantos arredondados (10–24px), sombras leves e bastante espaço em branco. Nada de bordas duras ou tabelas densas — o clima é acolhedor.</p>
+      </div>
+      <div class="card">
+        <h3>Números em destaque</h3>
+        <p class="bd">Valores monetários usam a fonte display (Fraunces) para virarem o ponto focal de cada tela, com o sinal + / − sempre visível.</p>
+      </div>
+      <div class="card">
+        <h3>Acessível nos dois modos</h3>
+        <p class="bd">Contraste de texto testado em claro e escuro. O foco dos campos usa um anel azul visível para quem navega pelo teclado.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Design System · Gestor de Gastos · proposta para aprovação<br>
+    Fontes: Fraunces + Plus Jakarta Sans · Paleta azul pastel · Claro & escuro
+  </footer>
+</div>
+
+<script>
+  function toggleTheme(){
+    const b = document.body;
+    const dark = b.getAttribute('data-theme') === 'dark';
+    b.setAttribute('data-theme', dark ? 'light' : 'dark');
+    document.getElementById('themeIcon').textContent = dark ? '🌙' : '☀️';
+    document.getElementById('themeLabel').textContent = dark ? 'Modo escuro' : 'Modo claro';
+  }
+</script>
+</body>
+</html>

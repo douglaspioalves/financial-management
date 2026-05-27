@@ -1,0 +1,40 @@
+# ─── Segredos / Ambiente ──────────────────────────────────────────────────
+.env
+*.env.local
+*.local
+
+# ─── Java / Maven ─────────────────────────────────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/
+!.mvn/wrapper/maven-wrapper.properties
+
+# ─── Node / Angular ───────────────────────────────────────────────────────
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+# ─── IDEs ─────────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ─── Sistema Operacional ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Docker ───────────────────────────────────────────────────────────────
+.docker/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────
+*.log
+logs/
