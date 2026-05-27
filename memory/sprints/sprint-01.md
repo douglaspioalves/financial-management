@@ -76,14 +76,15 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-01-04 · Telas de login e cadastro
-**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-01-03 | **Status:** `PENDENTE`
+**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-01-03 | **Status:** `EM ANDAMENTO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Tema Angular Material (paleta design system) | Frontend | PENDENTE |
+| Tema Angular Material (paleta design system) | Frontend | EM ANDAMENTO (agente paralelo) |
 | Módulo auth + telas login/cadastro | Frontend | PENDENTE |
-| AuthService frontend (HTTP + token) | Frontend | PENDENTE |
-| AuthGuard | Frontend | PENDENTE |
+| AuthService frontend (HTTP + token) | Frontend | CONCLUÍDO |
+| AuthGuard + GuestGuard | Frontend | CONCLUÍDO |
+| Auth Interceptor (Bearer token) | Frontend | CONCLUÍDO |
 | Toggle claro/escuro | Frontend | PENDENTE |
 
 ---
