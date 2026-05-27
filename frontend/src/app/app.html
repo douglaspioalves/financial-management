@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title() }}</h1>
+    <p class="subtitle">Controle de gastos do casal</p>
+  </header>
+
+  <main class="app-main">
+    <section class="health-status">
+      <h2>Status do sistema</h2>
+
+      @if (backendStatus() === 'loading') {
+        <div class="status-card status-loading">
+          <span class="status-icon">...</span>
+          <span class="status-text">Verificando conexão com o backend...</span>
+        </div>
+      }
+
+      @if (backendStatus() === 'ok') {
+        <div class="status-card status-ok">
+          <span class="status-icon">&#10003;</span>
+          <span class="status-text">Backend conectado</span>
+        </div>
+      }
+
+      @if (backendStatus() === 'error') {
+        <div class="status-card status-error">
+          <span class="status-icon">&#10007;</span>
+          <span class="status-text">Erro de conexao com o backend</span>
+        </div>
+      }
+    </section>
+  </main>
+
+  <router-outlet />
+</div>
