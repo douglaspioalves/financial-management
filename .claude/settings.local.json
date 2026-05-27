@@ -36,7 +36,8 @@
       "Bash(Write-Output \"Directories created\")",
       "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/dashboard)",
       "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/login)",
-      "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/register)"
+      "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/register)",
+      "Bash(git stash *)"
     ]
   }
 }
