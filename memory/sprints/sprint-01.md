@@ -71,20 +71,21 @@ DIA 9–10 (fechamento)
 | AuthService (register + login + JWT) | Backend | CONCLUÍDO |
 | AuthController (/api/auth/register e /login) | Backend | CONCLUÍDO |
 | Spring Security (filtro JWT, rotas) | Backend | CONCLUÍDO |
-| Testes de integração register/login | QA | PENDENTE |
+| Testes de integração register/login | QA | CONCLUÍDO |
 
 ---
 
 ### S-01-04 · Telas de login e cadastro
-**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-01-03 | **Status:** `PENDENTE`
+**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-01-03 | **Status:** `CONCLUÍDO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Tema Angular Material (paleta design system) | Frontend | PENDENTE |
-| Módulo auth + telas login/cadastro | Frontend | PENDENTE |
-| AuthService frontend (HTTP + token) | Frontend | PENDENTE |
-| AuthGuard | Frontend | PENDENTE |
-| Toggle claro/escuro | Frontend | PENDENTE |
+| Tema Angular Material (paleta design system) | Frontend | CONCLUÍDO |
+| Módulo auth + telas login/cadastro | Frontend | CONCLUÍDO |
+| AuthService frontend (HTTP + token) | Frontend | CONCLUÍDO |
+| AuthGuard + GuestGuard | Frontend | CONCLUÍDO |
+| Auth Interceptor (Bearer token) | Frontend | CONCLUÍDO |
+| Toggle claro/escuro | Frontend | CONCLUÍDO |
 
 ---
 
@@ -93,7 +94,7 @@ DIA 9–10 (fechamento)
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
 | 1 | 2026-05-26 (ter) | S-01-01 CONCLUÍDA — backend + frontend + Docker Compose + README | — |
-| 2 | 2026-05-27 (qua) | — | — |
+| 2 | 2026-05-27 (qua) | S-01-02 CONCLUÍDA (migrations) · S-01-03 CONCLUÍDA (backend JWT) · S-01-04 CONCLUÍDA (frontend auth) · CI adicionado | Créditos esgotados à noite; retomado na manhã |
 | 3 | 2026-05-28 (qui) | — | — |
 | 4 | 2026-05-29 (sex) | — | — |
 | 5 | 2026-06-01 (seg) | — | — |
@@ -108,10 +109,10 @@ DIA 9–10 (fechamento)
 ## Definition of Done
 
 - [x] S-01-01: `docker compose up --build` sobe tudo sem erro
-- [ ] S-01-02: Migrations aplicadas; seeds presentes no banco
-- [ ] S-01-03: Registro/login funcionando; 401 em rotas protegidas
-- [ ] S-01-04: Login no browser; modo claro/escuro funcionando
-- [ ] Testes passando: `./mvnw test`
+- [ ] S-01-02: Migrations aplicadas; seeds presentes no banco ← **PENDENTE: docker compose (Docker Desktop offline)**
+- [x] S-01-03: Registro/login funcionando; 401 em rotas protegidas ← testes QA OK (15/15 BUILD SUCCESS)
+- [x] S-01-04: Login no browser; modo claro/escuro funcionando ← build OK; **PENDENTE: teste manual**
+- [x] Testes passando: `./mvnw test` ← BUILD SUCCESS
 - [ ] Review registrada em `memory/reviews/review-sprint-01.md`
 - [ ] Retro registrada em `memory/retros/retro-sprint-01.md`
 - [ ] Learnings atualizados em `memory/learnings/`

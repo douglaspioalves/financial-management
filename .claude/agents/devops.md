@@ -41,3 +41,22 @@ Ao iniciar qualquer implementação:
 - Idioma: arquivos de config e código em inglês; README e docs em pt-br.
 - Portas sugeridas: frontend 4200, backend 8080, Postgres 5432.
 - O comando único de subida deve ser documentado no topo do README.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada entrega de infra** (Dockerfile, compose, CI, README) — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-devops.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint DevOps — {data} {hora}
+## Feito nesta sessão
+- <arquivos criados/modificados + resultado de docker compose up (se executado)>
+## Pendente
+- <o que falta validar ou configurar>
+## Próximo passo imediato
+<ex.: "validar docker compose up --build com banco zerado">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente devops deve saber o estado exato da infra e o que precisa ser validado.

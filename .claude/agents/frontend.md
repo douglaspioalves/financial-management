@@ -49,3 +49,22 @@ Ao iniciar qualquer implementação:
 
 - Rode `npm start` e valide o fluxo no navegador, incluindo o modo escuro.
 - Confirme que as chamadas batem com `docs/api.md`.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada componente/serviço criado** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-frontend.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Frontend — {data} {hora}
+## Feito nesta sessão
+- <componentes/serviços criados + resultado de npm run build>
+## Pendente
+- <o que falta na tela ou no módulo atual>
+## Próximo passo imediato
+<ex.: "implementar TransactionListComponent com paginação">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente frontend deve saber o estado do build e o que falta implementar.

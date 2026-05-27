@@ -23,7 +23,20 @@
       "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\gastos\\\\security\")",
       "Bash(Write-Host \"Diretorios criados com sucesso\")",
       "Bash(Write-Output \"OK\")",
-      "Bash(./mvnw test *)"
+      "Bash(./mvnw test *)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d['projects']['frontend']['architect']['build']['options'], indent=2\\)\\)\")",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('dependencies',{}\\), indent=2\\)\\)\")",
+      "Bash(Get-ChildItem *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(timeout 15 npm start)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\frontend\\\\src\\\\app\\\\dashboard\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\frontend\\\\src\\\\app\\\\auth\\\\login\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\frontend\\\\src\\\\app\\\\auth\\\\register\")",
+      "Bash(Write-Output \"Directories created\")",
+      "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/dashboard)",
+      "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/login)",
+      "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/register)"
     ]
   }
 }

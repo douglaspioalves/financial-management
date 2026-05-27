@@ -1,5 +1,6 @@
 package com.gastos.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,6 +32,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
@@ -47,6 +49,7 @@ public class User implements UserDetails {
     public String getUsername() { return email; }
 
     // UserDetails — senha é o hash
+    @JsonIgnore
     @Override
     public String getPassword() { return passwordHash; }
 

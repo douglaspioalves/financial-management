@@ -43,3 +43,22 @@ Ao adicionar testes:
 - Lógica crítica coberta por testes que passam (`./mvnw test`).
 - Roteiro de teste manual entregue ao usuário.
 - Nenhum endpoint da fatia sem autenticação (exceto login/registro).
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada grupo de testes criado** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-qa.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint QA — {data} {hora}
+## Feito nesta sessão
+- <testes criados + resultado de ./mvnw test>
+## Pendente
+- <casos de teste que faltam cobrir>
+## Próximo passo imediato
+<ex.: "escrever testes de integração para POST /api/transactions">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente QA deve saber exatamente quais testes existem e quais faltam.

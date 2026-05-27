@@ -48,3 +48,23 @@ Ao iniciar qualquer implementação:
 
 - Rode `./mvnw test` e garanta que passa.
 - Confirme que os endpoints batem com `docs/api.md`; se divergir, alinhe com o arquiteto.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada tarefa concluída** — não espere o fim da sessão.
+O encerramento pode vir a qualquer momento (limite de contexto, timeout, falha de rede).
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-backend.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Backend — {data} {hora}
+## Feito nesta sessão
+- <tarefa concluída + arquivos criados/modificados>
+## Pendente
+- <o que falta, com contexto para retomar sem reler a conversa>
+## Próximo passo imediato
+<ação concreta — ex.: "implementar TransactionService.findByMonth()">`
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente backend deve conseguir continuar sem perder contexto.
