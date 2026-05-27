@@ -39,6 +39,9 @@ jobs:
   frontend:
     name: Frontend CI
     runs-on: ubuntu-latest
+    env:
+      CI: true
+      NG_CLI_ANALYTICS: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
