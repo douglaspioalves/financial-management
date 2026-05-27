@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder.Default;
 
 import java.util.UUID;
 
@@ -41,6 +42,7 @@ public class Category {
     @Column(nullable = false, length = 20)
     private String color;
 
+    @Default
     @Column(nullable = false)
     private boolean inactive = false;
 
