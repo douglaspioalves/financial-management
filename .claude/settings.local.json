@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn wrapper:wrapper -Dmaven=3.9.6)",
+      "Bash(ng version *)",
+      "Bash(npm --version)",
+      "Bash(npx @angular/cli@latest version)",
+      "Bash(npx @angular/cli@latest new frontend --routing --style=scss --skip-git --skip-install)",
+      "Bash(python3 -c \"import sys,json; data=json.load\\(sys.stdin\\); print\\(data['projects']['frontend']['architect']['build'].get\\('options', {}\\).get\\('outputPath', 'NAO_DEFINIDO'\\)\\)\")",
+      "Bash(npm install *)",
+      "Bash(npx ng *)",
+      "Bash(./mvnw compile *)",
+      "Bash(./mvnw package *)",
+      "Bash(git add *)",
+      "Bash(git restore *)",
+      "Bash(git checkout *)",
+      "Bash(git commit *)",
+      "Bash(git config *)"
+    ]
+  }
+}
