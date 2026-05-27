@@ -51,13 +51,13 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-01-02 · Migration inicial do banco
-**Papel:** DBA | **Pontos:** 2 | **Depende de:** S-01-01 | **Status:** `PENDENTE`
+**Papel:** DBA | **Pontos:** 2 | **Depende de:** S-01-01 | **Status:** `CONCLUÍDO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| V1__initial_schema.sql (todas as tabelas) | DBA | PENDENTE |
-| Índices, FKs e constraints | DBA | PENDENTE |
-| V2__seeds.sql (2 persons + 12 categorias) | DBA | PENDENTE |
+| V2__initial_schema.sql (todas as tabelas) | DBA | CONCLUÍDO |
+| Índices, FKs e constraints | DBA | CONCLUÍDO |
+| V3__seeds.sql (2 persons + 12 categorias) | DBA | CONCLUÍDO |
 | Validar migrations num banco zerado | DevOps | PENDENTE |
 
 ---
