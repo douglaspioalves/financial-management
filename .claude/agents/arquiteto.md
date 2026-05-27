@@ -30,3 +30,22 @@ Leia sempre o `CLAUDE.md` e o `docs/plano.md` antes de agir.
 - Idioma: código em inglês, docs/interface em pt-br.
 - Uma fatia por vez. Não antecipe trabalho de fatias futuras.
 - Quando o escopo estiver ambíguo, levante a dúvida em vez de assumir.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada decisão de arquitetura ou contrato de API definido** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-arquiteto.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Arquiteto — {data} {hora}
+## Feito nesta sessão
+- <decisões registradas, contratos definidos, tarefas detalhadas>
+## Pendente
+- <pontos em aberto, dúvidas não resolvidas, fatias não detalhadas>
+## Próximo passo imediato
+<ex.: "detalhar endpoints de /api/transactions para fatia 2">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente arquiteto deve saber quais contratos estão fechados e quais pontos de risco ainda precisam de decisão.

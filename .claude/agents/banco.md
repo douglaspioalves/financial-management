@@ -41,3 +41,22 @@ Ao iniciar qualquer implementação:
 - Relacione `Installment.transaction_id` com `ON DELETE CASCADE` (apagar a compra apaga as parcelas).
 - Valide integridade: `card_id` só faz sentido quando `payment_method = CREDIT`.
 - Migrations devem rodar limpas num banco zerado (`docker compose up` parte do zero).
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada migration criada/validada** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-banco.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Banco — {data} {hora}
+## Feito nesta sessão
+- <migrations criadas (V{n}__nome.sql) + resultado da validação>
+## Pendente
+- <tabelas/índices/constraints que faltam>
+## Próximo passo imediato
+<ex.: "criar V5__add_recurring_rule_indexes.sql">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente banco deve saber qual é a última migration aplicada e o que falta.
