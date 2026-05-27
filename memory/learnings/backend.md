@@ -20,4 +20,15 @@
 
 ## Aprendizados das retrospectivas
 
-> (preenchido ao longo dos sprints)
+### Sprint 01 (2026-05-27)
+
+**Spring Security 6 + JWT (JJWT 0.12.x):**
+- API do JJWT mudou da 0.11 para 0.12: usar `Jwts.parser().verifyWith(key).build().parseSignedClaims(token)` (não `parserBuilder`)
+- `DaoAuthenticationProvider` deve ser declarado como `@Bean` explícito quando se usa `UserDetailsService` + `PasswordEncoder` customizados — evita o aviso "multiple UserDetailsService beans"
+- `JwtAuthenticationFilter` deve capturar exceções do parse do token silenciosamente e deixar a request prosseguir; o `SecurityFilterChain` nega o acesso depois
+- `User` implementar `UserDetails` diretamente é o padrão mais limpo para esse projeto (sem camada wrapper)
+- Tabela `users` (plural) — `user` é palavra reservada no PostgreSQL e causa erros silenciosos
+
+**GlobalExceptionHandler:**
+- Separar `MethodArgumentNotValidException` (400 por campo) de `IllegalArgumentException` (409) é o padrão correto para esse projeto
+- Retornar `Map<String, String>` com chave `mensagem` para erros de negócio e mapa de campos para erros de validação
