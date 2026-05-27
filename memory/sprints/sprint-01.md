@@ -63,14 +63,14 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-01-03 · Cadastro e login com JWT
-**Papel:** Backend | **Pontos:** 5 | **Depende de:** S-01-02 | **Status:** `PENDENTE`
+**Papel:** Backend | **Pontos:** 5 | **Depende de:** S-01-02 | **Status:** `CONCLUÍDO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Entidade User + UserRepository | Backend | PENDENTE |
-| AuthService (register + login + JWT) | Backend | PENDENTE |
-| AuthController (/api/auth/register e /login) | Backend | PENDENTE |
-| Spring Security (filtro JWT, rotas) | Backend | PENDENTE |
+| Entidade User + UserRepository | Backend | CONCLUÍDO |
+| AuthService (register + login + JWT) | Backend | CONCLUÍDO |
+| AuthController (/api/auth/register e /login) | Backend | CONCLUÍDO |
+| Spring Security (filtro JWT, rotas) | Backend | CONCLUÍDO |
 | Testes de integração register/login | QA | PENDENTE |
 
 ---

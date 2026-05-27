@@ -15,7 +15,15 @@
       "Bash(git restore *)",
       "Bash(git checkout *)",
       "Bash(git commit *)",
-      "Bash(git config *)"
+      "Bash(git config *)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\gastos\\\\domain\")",
+      "Bash(Out-Null)",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\gastos\\\\repository\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\gastos\\\\dto\\\\auth\")",
+      "Bash(New-Item -ItemType Directory -Force -Path \"C:\\\\Workspace\\\\Java\\\\financial-management\\\\backend\\\\src\\\\main\\\\java\\\\com\\\\gastos\\\\security\")",
+      "Bash(Write-Host \"Diretorios criados com sucesso\")",
+      "Bash(Write-Output \"OK\")",
+      "Bash(./mvnw test *)"
     ]
   }
 }
