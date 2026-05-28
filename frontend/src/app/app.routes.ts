@@ -13,5 +13,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
   },
+  {
+    path: 'transactions',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./transactions/transactions.routes').then(m => m.transactionsRoutes),
+  },
   { path: '**', redirectTo: '/auth/login' },
 ];
