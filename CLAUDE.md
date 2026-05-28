@@ -137,6 +137,64 @@ com acerto de contas e suporte a compras parceladas no cartão de crédito.
 - Não pule a Fatia 0.
 - Quando em dúvida sobre escopo, consulte `docs/plano.md` ou pergunte antes de implementar.
 
+## Execução autônoma (automode)
+
+> Leia esta seção antes de qualquer sessão de implementação.
+
+### Princípios de autonomia
+
+- **Aja sem pedir confirmação** para: criar branch, commitar, rodar testes, criar arquivos de memória.
+- **Pare e informe** apenas para: push com `--force`, drop de tabela, decisão de produto ambígua, ou erro bloqueante que não tem solução clara.
+- Se um comando necessário não estiver no allowlist, tente o equivalente com as ferramentas disponíveis (Read/Edit/Write/Glob/Grep) antes de perguntar.
+
+### Regra de git — INEGOCIÁVEL
+
+**NUNCA faça commit diretamente em `master`.** Toda mudança vai para uma branch e chega ao `master` somente via `git merge --no-ff` após revisão do agente revisor.
+
+```
+master  ←  git merge --no-ff  ←  feature/xxx  ←  seus commits
+```
+
+### Modelo de paralelismo por sprint
+
+Ao receber uma sprint, a ordem de execução é:
+
+```
+1. Arquiteto  →  API contract + breakdown (memory/sprints/sprint-NN.md)
+               ↓
+2. ┌─ DBA      →  migrations (branch: feature/s0N-schema)
+   ├─ Backend  →  entities + services (branch: feature/s0N-backend)   } paralelo
+   └─ Frontend →  módulo + mock (branch: feature/s0N-frontend)
+               ↓
+3. ┌─ Backend  →  controllers + endpoints (mesma branch)
+   ├─ Frontend →  integração real com API (mesma branch)               } paralelo
+   └─ QA       →  testes unitários (branch: feature/s0N-tests)
+               ↓
+4. ┌─ QA       →  testes de integração
+   └─ Revisor  →  revisão de todos os branches abertos                 } paralelo
+               ↓
+5. DevOps  →  merges para master + docker compose up --build + tag sprint-NN
+```
+
+### Convenção de branches por sprint
+
+| Tipo | Padrão | Exemplo |
+|---|---|---|
+| Schema/migrations | `feature/s0N-schema` | `feature/s03-schema` |
+| Backend | `feature/s0N-backend` | `feature/s03-backend` |
+| Frontend | `feature/s0N-frontend` | `feature/s03-frontend` |
+| Testes | `feature/s0N-tests` | `feature/s03-tests` |
+| Correção | `fix/s0N-descricao` | `fix/s03-installment-rounding` |
+| Docs/memória | `docs/s0N-descricao` | `docs/s03-planning` |
+
+### Critério de "pronto para merge"
+
+Uma branch só vai para o master quando:
+1. `./mvnw test` → BUILD SUCCESS (backend)
+2. `npm run build` → sem erros (frontend)
+3. Agente revisor aprovou (sem item bloqueante)
+4. DevOps validou `docker compose up --build` (ao menos uma vez por sprint)
+
 ## Processo Scrum
 
 - **Sprints de 2 semanas** (10 dias úteis). 7 sprints no total — ver `memory/epics-e-sprints.md`.
