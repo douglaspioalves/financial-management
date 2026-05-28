@@ -10,5 +10,5 @@ public interface CardRepository extends JpaRepository<Card, UUID> {
 
     List<Card> findAllByOrderByNameAsc();
 
-    boolean existsByOwnerPersonId(UUID ownerPersonId);
+    boolean existsByOwnerId(UUID ownerId);
 }
