@@ -1,15 +1,19 @@
 package com.gastos.service;
 
+import com.gastos.domain.Card;
 import com.gastos.domain.Category;
 import com.gastos.domain.CategoryType;
 import com.gastos.domain.PaymentMethod;
 import com.gastos.domain.Person;
 import com.gastos.domain.Transaction;
 import com.gastos.domain.TransactionType;
+import com.gastos.dto.installment.InstallmentResponse;
 import com.gastos.dto.transaction.CreateTransactionRequest;
 import com.gastos.dto.transaction.TransactionResponse;
 import com.gastos.dto.transaction.UpdateTransactionRequest;
+import com.gastos.repository.CardRepository;
 import com.gastos.repository.CategoryRepository;
+import com.gastos.repository.InstallmentRepository;
 import com.gastos.repository.PersonRepository;
 import com.gastos.repository.TransactionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -30,14 +34,15 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final PersonRepository personRepository;
+    private final CardRepository cardRepository;
+    private final InstallmentRepository installmentRepository;
+    private final InstallmentService installmentService;
 
     @Transactional
     public TransactionResponse create(CreateTransactionRequest request) {
-        // Parcelamento não disponível nesta versão
-        if (request.installmentsTotal() != null && request.installmentsTotal() > 1) {
-            throw new IllegalArgumentException(
-                    "Parcelamento não está disponível nesta versão. Use installmentsTotal = 1.");
-        }
+        // Validações adicionais para parcelamento
+        int installmentsTotal = request.installmentsTotal() != null ? request.installmentsTotal() : 1;
+        validateInstallmentsRule(installmentsTotal, request.paymentMethod(), request.cardId());
 
         // Valida e busca categoria ativa
         Category category = categoryRepository.findByIdAndInactiveFalse(request.categoryId())
@@ -63,10 +68,18 @@ public class TransactionService {
                 .paymentMethod(request.paymentMethod())
                 .cardId(request.cardId())
                 .splitRule(request.splitRule())
-                .installmentsTotal(request.installmentsTotal() != null ? request.installmentsTotal() : 1)
+                .installmentsTotal(installmentsTotal)
                 .build();
 
         Transaction saved = transactionRepository.save(transaction);
+
+        // Gera parcelas automaticamente para compras parceladas no crédito
+        if (installmentsTotal > 1 && request.paymentMethod() == PaymentMethod.CREDIT) {
+            Card card = cardRepository.findById(saved.getCardId())
+                    .orElseThrow(() -> new EntityNotFoundException("Cartão não encontrado."));
+            installmentService.generateInstallments(saved, card);
+        }
+
         return toResponse(saved);
     }
 
@@ -99,10 +112,10 @@ public class TransactionService {
             throw new org.springframework.orm.ObjectOptimisticLockingFailureException(Transaction.class, id);
         }
 
-        // Parcelamento não disponível nesta versão
+        // Lançamentos parcelados não podem ser editados
         if (transaction.getInstallmentsTotal() > 1) {
-            throw new IllegalArgumentException(
-                    "Edição de lançamentos parcelados não está disponível nesta versão.");
+            throw new IllegalStateException(
+                    "Lançamentos parcelados não podem ser editados. Exclua e recrie se necessário.");
         }
 
         // Valida e busca categoria ativa
@@ -138,15 +151,45 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Lançamento não encontrado."));
 
-        if (transaction.getInstallmentsTotal() > 1) {
-            throw new IllegalArgumentException(
-                    "Exclusão de lançamentos parcelados não está disponível nesta versão.");
-        }
-
+        // Cascade ON DELETE CASCADE no banco cuida das installments automaticamente
         transactionRepository.delete(transaction);
     }
 
+    @Transactional(readOnly = true)
+    public List<InstallmentResponse> findInstallments(UUID transactionId) {
+        // Verifica se a transação existe (404 se não)
+        if (!transactionRepository.existsById(transactionId)) {
+            throw new EntityNotFoundException("Lançamento não encontrado.");
+        }
+
+        return installmentRepository.findByTransactionIdOrderByNumberAsc(transactionId)
+                .stream()
+                .map(i -> new InstallmentResponse(
+                        i.getId(),
+                        i.getNumber(),
+                        i.getAmount(),
+                        i.getReferenceMonth()))
+                .toList();
+    }
+
     // --- métodos auxiliares ---
+
+    private void validateInstallmentsRule(int installmentsTotal, PaymentMethod paymentMethod, UUID cardId) {
+        if (installmentsTotal < 1) {
+            throw new IllegalArgumentException("O número de parcelas deve ser pelo menos 1.");
+        }
+        if (installmentsTotal > 48) {
+            throw new IllegalArgumentException("O número máximo de parcelas é 48.");
+        }
+        if (installmentsTotal >= 2 && paymentMethod != PaymentMethod.CREDIT) {
+            throw new IllegalArgumentException(
+                    "Compras parceladas só podem ser feitas com cartão de crédito.");
+        }
+        if (installmentsTotal >= 2 && cardId == null) {
+            throw new IllegalArgumentException(
+                    "Pagamento parcelado exige a seleção de um cartão de crédito.");
+        }
+    }
 
     private void validateCategoryTypeCompatibility(TransactionType transactionType, CategoryType categoryType) {
         boolean compatible = switch (transactionType) {
@@ -183,7 +226,7 @@ public class TransactionService {
         }
     }
 
-    private TransactionResponse toResponse(Transaction transaction) {
+    TransactionResponse toResponse(Transaction transaction) {
         TransactionResponse.CategorySummary categorySummary = new TransactionResponse.CategorySummary(
                 transaction.getCategory().getId(),
                 transaction.getCategory().getName(),
@@ -197,6 +240,14 @@ public class TransactionService {
                 transaction.getPaidByPerson().getColor()
         );
 
+        // Resolve o objeto card a partir do cardId armazenado na transaction
+        TransactionResponse.CardSummary cardSummary = null;
+        if (transaction.getCardId() != null) {
+            cardSummary = cardRepository.findById(transaction.getCardId())
+                    .map(c -> new TransactionResponse.CardSummary(c.getId(), c.getName()))
+                    .orElse(null);
+        }
+
         return new TransactionResponse(
                 transaction.getId(),
                 transaction.getType(),
@@ -206,7 +257,7 @@ public class TransactionService {
                 categorySummary,
                 personSummary,
                 transaction.getPaymentMethod(),
-                transaction.getCardId(),
+                cardSummary,
                 transaction.getSplitRule(),
                 transaction.getInstallmentsTotal(),
                 transaction.getCreatedAt(),
