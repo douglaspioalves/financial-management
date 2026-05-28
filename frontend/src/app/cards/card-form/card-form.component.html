@@ -1,0 +1,142 @@
+<div class="cf-page">
+
+  <!-- Cabecalho -->
+  <header class="cf-header">
+    <button mat-icon-button class="cf-header__back" (click)="cancel()" aria-label="Voltar">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <div>
+      <h1 class="cf-header__title">
+        {{ isEditMode ? 'Editar cartão' : 'Novo cartão' }}
+      </h1>
+      <p class="cf-header__subtitle">
+        {{ isEditMode ? 'Altere os dados do cartão abaixo.' : 'Preencha os dados para adicionar um cartão de crédito.' }}
+      </p>
+    </div>
+  </header>
+
+  <!-- Carregando dados -->
+  @if (loadingData()) {
+    <div class="cf-loading" aria-label="Carregando...">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  }
+
+  <!-- Formulario -->
+  @if (!loadingData()) {
+    <form [formGroup]="form" class="cf-form card" (ngSubmit)="submit()">
+
+      @if (apiError()) {
+        <div class="api-error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ apiError() }}</span>
+        </div>
+      }
+
+      <!-- Nome do cartão -->
+      <mat-form-field appearance="outline" class="cf-field">
+        <mat-label>Nome do cartão</mat-label>
+        <mat-icon matPrefix>credit_card</mat-icon>
+        <input matInput
+               formControlName="name"
+               placeholder="Ex.: Nubank, Itaú Visa..."
+               autocomplete="off" />
+        @if (form.get('name')?.hasError('required') && form.get('name')?.touched) {
+          <mat-error>Nome do cartão é obrigatório.</mat-error>
+        }
+        @if (form.get('name')?.hasError('maxlength') && form.get('name')?.touched) {
+          <mat-error>Nome deve ter no máximo 100 caracteres.</mat-error>
+        }
+        @if (fieldErrors()['name']) {
+          <mat-error>{{ fieldErrors()['name'] }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Titular -->
+      <mat-form-field appearance="outline" class="cf-field">
+        <mat-label>Titular</mat-label>
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-select formControlName="ownerPersonId">
+          @for (person of persons(); track person.id) {
+            <mat-option [value]="person.id">
+              <span class="person-option">
+                <span class="person-avatar" [style.background-color]="person.color">
+                  {{ person.name.charAt(0).toUpperCase() }}
+                </span>
+                {{ person.name }}
+              </span>
+            </mat-option>
+          }
+        </mat-select>
+        @if (form.get('ownerPersonId')?.hasError('required') && form.get('ownerPersonId')?.touched) {
+          <mat-error>Selecione o titular do cartão.</mat-error>
+        }
+        @if (fieldErrors()['ownerPersonId']) {
+          <mat-error>{{ fieldErrors()['ownerPersonId'] }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Dias de fechamento e vencimento -->
+      <div class="cf-row">
+        <mat-form-field appearance="outline" class="cf-field">
+          <mat-label>Dia de fechamento</mat-label>
+          <mat-select formControlName="closingDay">
+            @for (day of dayNumbers(); track day) {
+              <mat-option [value]="day">Dia {{ day }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Quando a fatura fecha.</mat-hint>
+          @if (form.get('closingDay')?.hasError('required') && form.get('closingDay')?.touched) {
+            <mat-error>Informe o dia de fechamento.</mat-error>
+          }
+          @if (form.get('closingDay')?.hasError('dayRange') && form.get('closingDay')?.touched) {
+            <mat-error>Deve ser entre 1 e 31.</mat-error>
+          }
+          @if (fieldErrors()['closingDay']) {
+            <mat-error>{{ fieldErrors()['closingDay'] }}</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="cf-field">
+          <mat-label>Dia de vencimento</mat-label>
+          <mat-select formControlName="dueDay">
+            @for (day of dayNumbers(); track day) {
+              <mat-option [value]="day">Dia {{ day }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Quando a fatura vence.</mat-hint>
+          @if (form.get('dueDay')?.hasError('required') && form.get('dueDay')?.touched) {
+            <mat-error>Informe o dia de vencimento.</mat-error>
+          }
+          @if (form.get('dueDay')?.hasError('dayRange') && form.get('dueDay')?.touched) {
+            <mat-error>Deve ser entre 1 e 31.</mat-error>
+          }
+          @if (fieldErrors()['dueDay']) {
+            <mat-error>{{ fieldErrors()['dueDay'] }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Acoes -->
+      <div class="cf-actions">
+        <button mat-stroked-button type="button" class="btn-cancel" (click)="cancel()">
+          Cancelar
+        </button>
+        <button mat-flat-button
+                color="primary"
+                type="submit"
+                class="btn-save"
+                [disabled]="loading()">
+          @if (loading()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>{{ isEditMode ? 'save' : 'add_card' }}</mat-icon>
+            {{ isEditMode ? 'Salvar alterações' : 'Adicionar cartão' }}
+          }
+        </button>
+      </div>
+
+    </form>
+  }
+
+</div>
