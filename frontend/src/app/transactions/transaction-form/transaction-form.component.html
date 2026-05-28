@@ -1,6 +1,6 @@
 <div class="tf-dialog">
 
-  <!-- ── Cabeçalho ── -->
+  <!-- Cabecalho -->
   <div class="tf-header">
     <div class="tf-header__type-toggle">
       <button class="type-btn"
@@ -20,14 +20,13 @@
   </div>
 
   <h2 mat-dialog-title class="tf-title">
-    {{ data.transaction ? 'Editar lançamento' : 'Novo lançamento' }}
+    {{ data.transaction ? 'Editar lancamento' : 'Novo lancamento' }}
   </h2>
 
-  <!-- ── Formulário ── -->
+  <!-- Formulario -->
   <mat-dialog-content>
     <form [formGroup]="form" class="tf-form" (ngSubmit)="submit()">
 
-      <!-- Erro geral da API -->
       @if (apiError()) {
         <div class="api-error" role="alert">
           <mat-icon>error_outline</mat-icon>
@@ -35,7 +34,6 @@
         </div>
       }
 
-      <!-- Valor -->
       <mat-form-field appearance="outline" class="tf-field tf-field--full">
         <mat-label>Valor (R$)</mat-label>
         <span matTextPrefix>R$&nbsp;</span>
@@ -47,32 +45,29 @@
                placeholder="0,00"
                inputmode="decimal" />
         @if (form.get('amount')?.hasError('required') && form.get('amount')?.touched) {
-          <mat-error>Informe o valor do lançamento.</mat-error>
+          <mat-error>Informe o valor do lancamento.</mat-error>
         }
         @if (form.get('amount')?.hasError('min') && form.get('amount')?.touched) {
           <mat-error>O valor deve ser maior que zero.</mat-error>
         }
       </mat-form-field>
 
-      <!-- Data -->
       <mat-form-field appearance="outline" class="tf-field tf-field--full">
         <mat-label>Data</mat-label>
         <input matInput type="date" formControlName="date" />
         @if (form.get('date')?.hasError('required') && form.get('date')?.touched) {
-          <mat-error>Informe a data do lançamento.</mat-error>
+          <mat-error>Informe a data do lancamento.</mat-error>
         }
       </mat-form-field>
 
-      <!-- Descrição -->
       <mat-form-field appearance="outline" class="tf-field tf-field--full">
-        <mat-label>Descrição (opcional)</mat-label>
-        <input matInput formControlName="description" placeholder="Ex.: Supermercado, Conta de luz…" />
+        <mat-label>Descricao (opcional)</mat-label>
+        <input matInput formControlName="description" placeholder="Ex.: Supermercado, Conta de luz..." />
         @if (form.get('description')?.hasError('maxlength')) {
-          <mat-error>Máximo de 255 caracteres.</mat-error>
+          <mat-error>Maximo de 255 caracteres.</mat-error>
         }
       </mat-form-field>
 
-      <!-- Categoria -->
       <mat-form-field appearance="outline" class="tf-field tf-field--full">
         <mat-label>Categoria</mat-label>
         <mat-select formControlName="categoryId">
@@ -97,7 +92,6 @@
         }
       </mat-form-field>
 
-      <!-- Quem pagou -->
       <mat-form-field appearance="outline" class="tf-field tf-field--full">
         <mat-label>Quem pagou</mat-label>
         <mat-select formControlName="paidByPersonId">
@@ -121,16 +115,15 @@
         }
       </mat-form-field>
 
-      <!-- Linha: Método de pagamento + Divisão -->
       <div class="tf-row">
         <mat-form-field appearance="outline" class="tf-field">
           <mat-label>Forma de pagamento</mat-label>
           <mat-select formControlName="paymentMethod">
             <mat-option value="CASH">Dinheiro</mat-option>
-            <mat-option value="DEBIT">Débito</mat-option>
-            <mat-option value="CREDIT">Crédito</mat-option>
+            <mat-option value="DEBIT">Debito</mat-option>
+            <mat-option value="CREDIT">Credito</mat-option>
             <mat-option value="PIX">Pix</mat-option>
-            <mat-option value="TRANSFER">Transferência</mat-option>
+            <mat-option value="TRANSFER">Transferencia</mat-option>
           </mat-select>
           @if (form.get('paymentMethod')?.hasError('required') && form.get('paymentMethod')?.touched) {
             <mat-error>Selecione a forma de pagamento.</mat-error>
@@ -138,7 +131,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="tf-field">
-          <mat-label>Divisão</mat-label>
+          <mat-label>Divisao</mat-label>
           <mat-select formControlName="splitRule">
             <mat-option value="FIFTY_FIFTY">50 / 50</mat-option>
             <mat-option value="PERSON_A">Somente A</mat-option>
@@ -147,17 +140,15 @@
           </mat-select>
           <mat-hint>Como o valor entra no acerto de contas.</mat-hint>
           @if (form.get('splitRule')?.hasError('required') && form.get('splitRule')?.touched) {
-            <mat-error>Selecione a regra de divisão.</mat-error>
+            <mat-error>Selecione a regra de divisao.</mat-error>
           }
         </mat-form-field>
       </div>
 
-      <!-- installmentsTotal: fixo 1 (parcelamento no sprint 03) -->
-
     </form>
   </mat-dialog-content>
 
-  <!-- ── Ações ── -->
+  <!-- Acoes -->
   <mat-dialog-actions align="end" class="tf-actions">
     <button mat-stroked-button mat-dialog-close class="btn-cancel" type="button">
       Cancelar
@@ -171,7 +162,7 @@
       @if (loading()) {
         <mat-spinner diameter="18"></mat-spinner>
       } @else {
-        {{ data.transaction ? 'Salvar alterações' : 'Criar lançamento' }}
+        {{ data.transaction ? 'Salvar alteracoes' : 'Criar lancamento' }}
       }
     </button>
   </mat-dialog-actions>

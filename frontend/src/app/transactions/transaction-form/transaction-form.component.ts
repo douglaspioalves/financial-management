@@ -1,21 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { CategoryService } from '../../core/services/category.service';
 import { PersonService } from '../../core/services/person.service';
 import { TransactionService } from '../../core/services/transaction.service';
@@ -30,7 +22,7 @@ import {
 
 export interface TransactionFormDialogData {
   transaction: Transaction | null;
-  month: string; // yyyy-MM
+  month: string;
 }
 
 @Component({
@@ -98,7 +90,7 @@ export class TransactionFormComponent implements OnInit {
 
   protected setType(type: TransactionType): void {
     this.form.patchValue({ type });
-    // Recarrega categorias filtradas pelo tipo
+    this.form.patchValue({ categoryId: '' });
     this.loadCategories();
   }
 
@@ -122,21 +114,21 @@ export class TransactionFormComponent implements OnInit {
         description: v.description || undefined,
         categoryId: v.categoryId!,
         paidByPersonId: v.paidByPersonId!,
-        paymentMethod: v.paymentMethod as any,
-        splitRule: v.splitRule as any,
+        paymentMethod: v.paymentMethod as UpdateTransactionRequest['paymentMethod'],
+        splitRule: v.splitRule as UpdateTransactionRequest['splitRule'],
         installmentsTotal: 1,
         version: this.data.transaction.version,
       };
 
-      this.transactionService
-        .updateTransaction(this.data.transaction.id, req)
-        .subscribe({
-          next: () => {
-            this.loading.set(false);
-            this.dialogRef.close(true);
-          },
-          error: (err) => this.handleError(err),
-        });
+      this.transactionService.updateTransaction(this.data.transaction.id, req).subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.dialogRef.close(true);
+        },
+        error: (err: { error?: { message?: string; errors?: Record<string, string> } }) => {
+          this.handleError(err);
+        },
+      });
     } else {
       const req: CreateTransactionRequest = {
         type: v.type as TransactionType,
@@ -145,8 +137,8 @@ export class TransactionFormComponent implements OnInit {
         description: v.description || undefined,
         categoryId: v.categoryId!,
         paidByPersonId: v.paidByPersonId!,
-        paymentMethod: v.paymentMethod as any,
-        splitRule: v.splitRule as any,
+        paymentMethod: v.paymentMethod as CreateTransactionRequest['paymentMethod'],
+        splitRule: v.splitRule as CreateTransactionRequest['splitRule'],
         installmentsTotal: 1,
       };
 
@@ -155,12 +147,14 @@ export class TransactionFormComponent implements OnInit {
           this.loading.set(false);
           this.dialogRef.close(true);
         },
-        error: (err) => this.handleError(err),
+        error: (err: { error?: { message?: string; errors?: Record<string, string> } }) => {
+          this.handleError(err);
+        },
       });
     }
   }
 
-  private handleError(err: any): void {
+  private handleError(err: { error?: { message?: string; errors?: Record<string, string> } }): void {
     this.loading.set(false);
     const error = err?.error;
     if (error?.message) {
@@ -176,9 +170,8 @@ export class TransactionFormComponent implements OnInit {
   private loadCategories(): void {
     this.loadingCategories.set(true);
     const type = this.form.value.type ?? 'EXPENSE';
-    // Solicita categorias compatíveis: tipo específico + BOTH
     this.categoryService.getCategories(type).subscribe({
-      next: (cats) => {
+      next: (cats: Category[]) => {
         this.categories.set(cats);
         this.loadingCategories.set(false);
       },
@@ -191,8 +184,8 @@ export class TransactionFormComponent implements OnInit {
   private loadPersons(): void {
     this.loadingPersons.set(true);
     this.personService.getPersons().subscribe({
-      next: (persons) => {
-        this.persons.set(persons);
+      next: (ps: Person[]) => {
+        this.persons.set(ps);
         this.loadingPersons.set(false);
       },
       error: () => {

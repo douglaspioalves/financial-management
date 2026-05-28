@@ -40,7 +40,6 @@ export class TransactionListComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   protected theme = inject(ThemeService);
 
-  // Estado do mês navegável
   private currentDate = signal(new Date());
 
   protected loading = signal(false);
@@ -70,10 +69,6 @@ export class TransactionListComponent implements OnInit {
       .reduce((sum, t) => sum + t.amount, 0)
   );
 
-  protected themeIcon = computed(() =>
-    this.theme.isDark() ? 'Modo claro' : 'Modo escuro'
-  );
-
   ngOnInit(): void {
     this.loadTransactions();
   }
@@ -98,10 +93,10 @@ export class TransactionListComponent implements OnInit {
       data: { transaction: null, month: this.currentMonth() },
     });
 
-    ref.afterClosed().subscribe((saved) => {
+    ref.afterClosed().subscribe((saved: boolean) => {
       if (saved) {
         this.loadTransactions();
-        this.snackBar.open('Lançamento criado com sucesso!', 'Fechar', {
+        this.snackBar.open('Lancamento criado com sucesso!', 'Fechar', {
           duration: 3000,
           panelClass: 'snack--success',
         });
@@ -117,10 +112,10 @@ export class TransactionListComponent implements OnInit {
       data: { transaction: tx, month: this.currentMonth() },
     });
 
-    ref.afterClosed().subscribe((saved) => {
+    ref.afterClosed().subscribe((saved: boolean) => {
       if (saved) {
         this.loadTransactions();
-        this.snackBar.open('Lançamento atualizado!', 'Fechar', {
+        this.snackBar.open('Lancamento atualizado!', 'Fechar', {
           duration: 3000,
           panelClass: 'snack--success',
         });
@@ -139,14 +134,14 @@ export class TransactionListComponent implements OnInit {
       this.transactionService.deleteTransaction(tx.id).subscribe({
         next: () => {
           this.loadTransactions();
-          this.snackBar.open('Lançamento excluído.', 'Fechar', {
+          this.snackBar.open('Lancamento excluido.', 'Fechar', {
             duration: 3000,
           });
         },
-        error: (err) => {
-          const msg =
-            err?.error?.message ?? 'Erro ao excluir lançamento. Tente novamente.';
-          this.snackBar.open(msg, 'Fechar', {
+        error: (err: { error?: { message?: string } }) => {
+          const message =
+            err?.error?.message ?? 'Erro ao excluir lancamento. Tente novamente.';
+          this.snackBar.open(message, 'Fechar', {
             duration: 4000,
             panelClass: 'snack--error',
           });
@@ -158,11 +153,11 @@ export class TransactionListComponent implements OnInit {
   protected categoryIcon(categoryName: string): string {
     const name = categoryName.toLowerCase();
     if (name.includes('mercado') || name.includes('alimenta')) return 'shopping_cart';
-    if (name.includes('salário') || name.includes('renda') || name.includes('receita')) return 'work';
-    if (name.includes('transporte') || name.includes('uber') || name.includes('combustível')) return 'directions_car';
+    if (name.includes('salario') || name.includes('renda') || name.includes('receita')) return 'work';
+    if (name.includes('transporte') || name.includes('uber') || name.includes('combustivel')) return 'directions_car';
     if (name.includes('lazer') || name.includes('cinema') || name.includes('entretenimento')) return 'movie';
-    if (name.includes('saúde') || name.includes('farmácia') || name.includes('médico')) return 'local_hospital';
-    if (name.includes('educação') || name.includes('curso')) return 'school';
+    if (name.includes('saude') || name.includes('farmacia') || name.includes('medico')) return 'local_hospital';
+    if (name.includes('educacao') || name.includes('curso')) return 'school';
     if (name.includes('moradia') || name.includes('aluguel')) return 'home';
     if (name.includes('viagem')) return 'flight';
     return 'receipt';
@@ -171,10 +166,10 @@ export class TransactionListComponent implements OnInit {
   protected paymentMethodLabel(method: PaymentMethod): string {
     const labels: Record<PaymentMethod, string> = {
       CASH: 'Dinheiro',
-      DEBIT: 'Débito',
-      CREDIT: 'Crédito',
+      DEBIT: 'Debito',
+      CREDIT: 'Credito',
       PIX: 'Pix',
-      TRANSFER: 'Transferência',
+      TRANSFER: 'Transferencia',
     };
     return labels[method] ?? method;
   }
@@ -182,8 +177,8 @@ export class TransactionListComponent implements OnInit {
   protected splitRuleLabel(rule: SplitRule): string {
     const labels: Record<SplitRule, string> = {
       FIFTY_FIFTY: '50/50',
-      PERSON_A: 'Só Pessoa A',
-      PERSON_B: 'Só Pessoa B',
+      PERSON_A: 'So A',
+      PERSON_B: 'So B',
       PROPORTIONAL: 'Proporcional',
     };
     return labels[rule] ?? rule;
@@ -192,19 +187,18 @@ export class TransactionListComponent implements OnInit {
   private loadTransactions(): void {
     this.loading.set(true);
     this.transactionService.getTransactions(this.currentMonth()).subscribe({
-      next: (data) => {
-        // Ordena por data decrescente
+      next: (data: Transaction[]) => {
         const sorted = [...data].sort(
           (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
         );
         this.transactions.set(sorted);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: { error?: { message?: string } }) => {
         this.loading.set(false);
-        const msg =
-          err?.error?.message ?? 'Erro ao carregar lançamentos. Tente novamente.';
-        this.snackBar.open(msg, 'Fechar', {
+        const message =
+          err?.error?.message ?? 'Erro ao carregar lancamentos. Tente novamente.';
+        this.snackBar.open(message, 'Fechar', {
           duration: 4000,
           panelClass: 'snack--error',
         });

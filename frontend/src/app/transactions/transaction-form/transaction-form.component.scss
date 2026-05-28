@@ -1,11 +1,9 @@
-// ── Dialog container ──────────────────────────────────────────────────────────
 .tf-dialog {
   background: var(--color-bg-card);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-// ── Cabeçalho ─────────────────────────────────────────────────────────────────
 .tf-header {
   display: flex;
   align-items: center;
@@ -13,7 +11,6 @@
   padding: 16px 20px 0;
 }
 
-// Toggle Despesa / Receita
 .tf-header__type-toggle {
   display: flex;
   border-radius: 999px;
@@ -48,7 +45,6 @@
   color: var(--color-text-secondary);
 }
 
-// ── Título ────────────────────────────────────────────────────────────────────
 .tf-title {
   font-family: var(--font-display) !important;
   font-size: 1.2rem !important;
@@ -58,7 +54,6 @@
   margin: 0 !important;
 }
 
-// ── Formulário ────────────────────────────────────────────────────────────────
 .tf-form {
   display: flex;
   flex-direction: column;
@@ -84,7 +79,6 @@
   }
 }
 
-// ── Erro da API ───────────────────────────────────────────────────────────────
 .api-error {
   display: flex;
   align-items: flex-start;
@@ -106,7 +100,6 @@
   }
 }
 
-// ── Opções de select ──────────────────────────────────────────────────────────
 .cat-option {
   display: flex;
   align-items: center;
@@ -140,7 +133,6 @@
   flex-shrink: 0;
 }
 
-// ── Ações ─────────────────────────────────────────────────────────────────────
 .tf-actions {
   padding: 8px 20px 20px !important;
   gap: 12px;
@@ -169,7 +161,6 @@
   }
 }
 
-// ── Material overrides ────────────────────────────────────────────────────────
 ::ng-deep .mat-mdc-dialog-content {
   padding: 8px 20px 4px !important;
   max-height: 60vh;

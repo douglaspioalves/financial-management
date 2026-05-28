@@ -1,11 +1,9 @@
-// ── Página ────────────────────────────────────────────────────────────────────
 .tl-page {
   min-height: 100vh;
   background: var(--color-bg);
-  padding-bottom: 96px; // espaço para o FAB
+  padding-bottom: 96px;
 }
 
-// ── Cabeçalho ─────────────────────────────────────────────────────────────────
 .tl-header {
   position: sticky;
   top: 0;
@@ -38,17 +36,12 @@
   color: var(--color-text-secondary);
 }
 
-// ── Navegação de mês ──────────────────────────────────────────────────────────
 .month-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 16px;
-
-  .mat-icon-button {
-    color: var(--color-primary);
-  }
 }
 
 .month-label {
@@ -59,9 +52,9 @@
   min-width: 160px;
   text-align: center;
   letter-spacing: -0.01em;
+  text-transform: capitalize;
 }
 
-// ── Resumo do mês ─────────────────────────────────────────────────────────────
 .summary-bar {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -99,12 +92,10 @@
   }
 }
 
-// ── Conteúdo ──────────────────────────────────────────────────────────────────
 .tl-content {
   padding: 0 16px;
 }
 
-// ── Estado de carregamento ────────────────────────────────────────────────────
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -116,7 +107,6 @@
   font-size: 0.95rem;
 }
 
-// ── Estado vazio ──────────────────────────────────────────────────────────────
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -160,7 +150,6 @@
   }
 }
 
-// ── Lista de lançamentos ──────────────────────────────────────────────────────
 .tx-list {
   display: flex;
   flex-direction: column;
@@ -309,7 +298,6 @@
   }
 }
 
-// ── FAB ───────────────────────────────────────────────────────────────────────
 .fab {
   position: fixed !important;
   bottom: 24px;
@@ -323,7 +311,6 @@
   }
 }
 
-// ── Responsividade ────────────────────────────────────────────────────────────
 @media (max-width: 480px) {
   .tx-info__tags {
     display: none;
