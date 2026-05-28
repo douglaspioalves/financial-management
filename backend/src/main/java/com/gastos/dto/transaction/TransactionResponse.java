@@ -19,7 +19,7 @@ public record TransactionResponse(
         CategorySummary category,
         PersonSummary paidByPerson,
         PaymentMethod paymentMethod,
-        UUID cardId,
+        CardSummary card,
         SplitRule splitRule,
         int installmentsTotal,
         LocalDateTime createdAt,
@@ -37,5 +37,14 @@ public record TransactionResponse(
             UUID id,
             String name,
             String color
+    ) {}
+
+    /**
+     * Resumo do cartão de crédito vinculado ao lançamento.
+     * Retornado como null quando o lançamento não usa cartão de crédito.
+     */
+    public record CardSummary(
+            UUID id,
+            String name
     ) {}
 }
