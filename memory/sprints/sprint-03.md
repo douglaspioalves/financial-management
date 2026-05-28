@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 1)
 **Fatia:** 3a
 **Objetivo:** Cadastrar cartões de crédito com fechamento e vencimento; selecionar no lançamento.
-**Status:** 🔵 EM ANDAMENTO
+**Status:** ✅ CONCLUÍDO
 
 ---
 
