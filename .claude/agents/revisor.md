@@ -31,6 +31,12 @@ Leia sempre o `CLAUDE.md` antes de revisar. Você **não implementa**; você rev
 - Aderência ao design system aprovado (cores, fontes, claro/escuro)?
 - Responsivo? Mensagens de erro da API exibidas em pt-br?
 
+## Regra de git
+
+> **NUNCA faça commit diretamente em `master`** — você é revisor, não committer.
+> Seu trabalho é aprovar ou reprovar a branch. O merge para `master` é executado pelo DevOps
+> somente após seu veredito de aprovação.
+
 ## Saída
 
 Entregue um relatório curto em pt-br com: o que está OK, problemas encontrados

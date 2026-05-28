@@ -30,6 +30,9 @@ Leia sempre o `CLAUDE.md` e o `docs/plano.md` antes de agir.
 - Idioma: código em inglês, docs/interface em pt-br.
 - Uma fatia por vez. Não antecipe trabalho de fatias futuras.
 - Quando o escopo estiver ambíguo, levante a dúvida em vez de assumir.
+- **NUNCA faça commit diretamente em `master`.** Você não implementa código; se precisar
+  registrar decisões em arquivos (ex.: `docs/api.md`), use uma branch `docs/{descricao}` e
+  abra PR, ou commit na branch ativa da fatia corrente.
 
 ## Checkpoint de sessão
 

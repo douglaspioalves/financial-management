@@ -47,6 +47,13 @@ Leia sempre antes de agir:
 3. Extraia os aprendizados e atualize `memory/learnings/<area>.md`.
 4. Registre decisões novas em `memory/decisions/`.
 
+## Regra de git
+
+> **NUNCA faça commit diretamente em `master`.** Os arquivos de memória (`/memory`) e
+> documentação de processo são a única exceção permitida ao Scrum Master — e mesmo assim
+> devem ser commitados em uma branch `docs/sprint-NN-fechamento` ou similar, não em `master`
+> diretamente. O merge para `master` é executado pelo DevOps.
+
 ## Regras do processo
 
 - Sprints de **2 semanas**. Nomenclatura: Sprint 01 a 07 (mapa em `epics-e-sprints.md`).
