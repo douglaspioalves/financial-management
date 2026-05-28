@@ -1,5 +1,6 @@
 package com.gastos.dto.transaction;
 
+import com.gastos.domain.CategoryType;
 import com.gastos.domain.PaymentMethod;
 import com.gastos.domain.SplitRule;
 import com.gastos.domain.TransactionType;
@@ -28,7 +29,7 @@ public record TransactionResponse(
     public record CategorySummary(
             UUID id,
             String name,
-            com.gastos.domain.CategoryType type,
+            CategoryType type,
             String color
     ) {}
 
