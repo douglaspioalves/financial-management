@@ -7,6 +7,7 @@ import com.gastos.dto.category.CreateCategoryRequest;
 import com.gastos.dto.category.UpdateCategoryRequest;
 import com.gastos.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.web.server.ResponseStatusException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -188,8 +189,8 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("create throws IllegalArgumentException when name is duplicate")
-    void create_withDuplicateName_throwsIllegalArgumentException() {
+    @DisplayName("create retorna 409 quando nome é duplicado")
+    void create_withDuplicateName_returns409() {
         CreateCategoryRequest request = new CreateCategoryRequest(
                 "Alimentação", CategoryType.EXPENSE, "#FF5733");
 
@@ -197,9 +198,8 @@ class CategoryServiceTest {
                 .thenReturn(true);
 
         assertThatThrownBy(() -> categoryService.create(request))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Já existe uma categoria ativa com este nome")
-                .as("Deve lançar IllegalArgumentException ao tentar criar categoria com nome duplicado");
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("Já existe uma categoria ativa com este nome");
 
         verify(categoryRepository, never()).save(any());
     }

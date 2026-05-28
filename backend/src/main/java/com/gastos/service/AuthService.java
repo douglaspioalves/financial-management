@@ -7,7 +7,9 @@ import com.gastos.dto.auth.RegisterRequest;
 import com.gastos.repository.UserRepository;
 import com.gastos.security.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,7 +25,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("E-mail já cadastrado");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "E-mail já cadastrado");
         }
 
         User user = User.builder()
