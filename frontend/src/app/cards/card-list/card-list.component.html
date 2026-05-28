@@ -1,0 +1,97 @@
+<div class="cl-page">
+
+  <!-- Cabecalho -->
+  <header class="cl-header">
+    <div class="cl-header__title-group">
+      <mat-icon class="cl-header__icon">credit_card</mat-icon>
+      <h1 class="cl-header__title">Cartões</h1>
+    </div>
+    <button mat-flat-button color="primary" class="cl-btn-new" (click)="navigateToNew()">
+      <mat-icon>add</mat-icon>
+      Novo cartão
+    </button>
+  </header>
+
+  <!-- Estado de carregamento -->
+  @if (loading()) {
+    <div class="cl-loading" aria-label="Carregando cartões...">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Carregando cartões...</span>
+    </div>
+  }
+
+  <!-- Mensagem de erro -->
+  @if (!loading() && errorMessage()) {
+    <div class="cl-error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorMessage() }}</span>
+      <button mat-stroked-button (click)="loadCards()">Tentar novamente</button>
+    </div>
+  }
+
+  <!-- Lista de cartões -->
+  @if (!loading() && !errorMessage()) {
+    @if (cards().length === 0) {
+      <!-- Estado vazio -->
+      <div class="cl-empty">
+        <mat-icon class="cl-empty__icon">credit_card_off</mat-icon>
+        <p class="cl-empty__title">Nenhum cartão cadastrado</p>
+        <p class="cl-empty__subtitle">Adicione seu primeiro cartão para associar compras parceladas.</p>
+        <button mat-flat-button color="primary" (click)="navigateToNew()">
+          <mat-icon>add</mat-icon>
+          Adicionar cartão
+        </button>
+      </div>
+    } @else {
+      <div class="cl-grid">
+        @for (card of cards(); track card.id) {
+          <article class="cl-card">
+            <!-- Faixa superior com nome e titular -->
+            <div class="cl-card__top">
+              <div class="cl-card__chip">
+                <mat-icon>credit_card</mat-icon>
+              </div>
+              <div class="cl-card__info">
+                <span class="cl-card__name">{{ card.name }}</span>
+                <span class="cl-card__owner">
+                  <mat-icon class="cl-card__owner-icon">person</mat-icon>
+                  {{ card.ownerPersonName }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Datas de fechamento e vencimento -->
+            <div class="cl-card__dates">
+              <div class="cl-card__date-item">
+                <span class="cl-card__date-label">Fechamento</span>
+                <span class="cl-card__date-value">{{ formatDay(card.closingDay) }}</span>
+              </div>
+              <div class="cl-card__date-divider"></div>
+              <div class="cl-card__date-item">
+                <span class="cl-card__date-label">Vencimento</span>
+                <span class="cl-card__date-value">{{ formatDay(card.dueDay) }}</span>
+              </div>
+            </div>
+
+            <!-- Acoes -->
+            <div class="cl-card__actions">
+              <button mat-icon-button
+                      class="cl-card__btn-edit"
+                      matTooltip="Editar cartão"
+                      (click)="navigateToEdit(card)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button
+                      class="cl-card__btn-delete"
+                      matTooltip="Excluir cartão"
+                      (click)="confirmDelete(card)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    }
+  }
+
+</div>
