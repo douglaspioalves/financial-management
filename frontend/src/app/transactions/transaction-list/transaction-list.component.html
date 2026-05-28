@@ -1,0 +1,119 @@
+<div class="tl-page">
+
+  <!-- ── Cabeçalho ── -->
+  <header class="tl-header">
+    <div class="tl-header__left">
+      <button mat-icon-button class="back-btn" routerLink="/dashboard" matTooltip="Voltar ao painel">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h1 class="tl-title">Lançamentos</h1>
+    </div>
+    <div class="tl-header__right">
+      <button mat-icon-button [matTooltip]="themeIcon()" (click)="theme.toggle()">
+        <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Navegação de mês ── -->
+  <div class="month-nav">
+    <button mat-icon-button (click)="previousMonth()" matTooltip="Mês anterior">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <span class="month-label">{{ monthLabel() }}</span>
+    <button mat-icon-button (click)="nextMonth()" matTooltip="Próximo mês">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <!-- ── Resumo do mês ── -->
+  @if (!loading() && transactions().length > 0) {
+    <div class="summary-bar">
+      <div class="summary-card summary-card--income">
+        <span class="summary-card__label">Receitas</span>
+        <span class="summary-card__value amount amount--positive">{{ totalIncome() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+      </div>
+      <div class="summary-card summary-card--expense">
+        <span class="summary-card__label">Despesas</span>
+        <span class="summary-card__value amount amount--negative">{{ totalExpense() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- ── Conteúdo principal ── -->
+  <div class="tl-content">
+
+    @if (loading()) {
+      <!-- Estado de carregamento -->
+      <div class="loading-state">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p>Carregando lançamentos...</p>
+      </div>
+    } @else if (transactions().length === 0) {
+      <!-- Estado vazio -->
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <mat-icon>receipt_long</mat-icon>
+        </div>
+        <h3>Nenhum lançamento em {{ monthLabel() }}</h3>
+        <p>Toque no botão <strong>+</strong> para adicionar o primeiro lançamento do mês.</p>
+      </div>
+    } @else {
+      <!-- Lista de lançamentos -->
+      <div class="tx-list">
+        @for (tx of transactions(); track tx.id) {
+          <div class="tx-item" [class.tx-item--income]="tx.type === 'INCOME'" [class.tx-item--expense]="tx.type === 'EXPENSE'">
+
+            <!-- Ícone / cor da categoria -->
+            <div class="tx-icon" [style.background-color]="tx.category.color + '33'" [style.color]="tx.category.color">
+              <mat-icon>{{ categoryIcon(tx.category.name) }}</mat-icon>
+            </div>
+
+            <!-- Informações -->
+            <div class="tx-info">
+              <span class="tx-info__title">{{ tx.description || tx.category.name }}</span>
+              <span class="tx-info__sub">
+                {{ tx.date | date:'dd/MM/yyyy' }} &middot; {{ paymentMethodLabel(tx.paymentMethod) }}
+              </span>
+              <div class="tx-info__tags">
+                <span class="chip chip--category" [style.background-color]="tx.category.color + '22'" [style.color]="tx.category.color">
+                  {{ tx.category.name }}
+                </span>
+                <span class="chip chip--split">{{ splitRuleLabel(tx.splitRule) }}</span>
+              </div>
+            </div>
+
+            <!-- Valor + quem pagou -->
+            <div class="tx-right">
+              <span class="tx-amount amount"
+                    [class.amount--positive]="tx.type === 'INCOME'"
+                    [class.amount--negative]="tx.type === 'EXPENSE'">
+                {{ tx.type === 'INCOME' ? '+' : '−' }}&nbsp;{{ tx.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+              </span>
+              <div class="tx-person" [style.background-color]="tx.paidByPerson.color" [matTooltip]="'Pago por ' + tx.paidByPerson.name">
+                {{ tx.paidByPerson.name.charAt(0).toUpperCase() }}
+              </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="tx-actions">
+              <button mat-icon-button class="action-btn" (click)="openEditForm(tx)" matTooltip="Editar">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button class="action-btn action-btn--delete" (click)="confirmDelete(tx)" matTooltip="Excluir">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── FAB ── -->
+  <button mat-fab class="fab" color="primary" (click)="openNewForm()" matTooltip="Novo lançamento" aria-label="Novo lançamento">
+    <mat-icon>add</mat-icon>
+  </button>
+
+</div>
