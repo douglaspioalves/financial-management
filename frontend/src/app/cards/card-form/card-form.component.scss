@@ -1,0 +1,160 @@
+.cf-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+// ─── Cabecalho ────────────────────────────────────────────────────────────────
+.cf-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 28px;
+
+  &__back {
+    color: var(--color-text-secondary);
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 4px;
+  }
+
+  &__subtitle {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.cf-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+// ─── Formulario ───────────────────────────────────────────────────────────────
+.cf-form {
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cf-field {
+  width: 100%;
+}
+
+.cf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+// ─── Erro de API ──────────────────────────────────────────────────────────────
+.api-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--color-expense) 12%, var(--color-bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-expense) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-expense);
+  font-size: 0.87rem;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+// ─── Opcao de pessoa ──────────────────────────────────────────────────────────
+.person-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.person-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+// ─── Acoes ────────────────────────────────────────────────────────────────────
+.cf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-cancel {
+  font-family: var(--font-body);
+  border-radius: var(--radius-sm) !important;
+  color: var(--color-text-secondary);
+}
+
+.btn-save {
+  font-family: var(--font-body);
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  min-width: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+// ─── Responsividade ───────────────────────────────────────────────────────────
+@media (max-width: 480px) {
+  .cf-page {
+    padding: 16px 12px;
+  }
+
+  .cf-form {
+    padding: 20px 16px 16px;
+  }
+
+  .cf-actions {
+    flex-direction: column-reverse;
+
+    .btn-cancel,
+    .btn-save {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
