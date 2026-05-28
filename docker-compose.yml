@@ -33,7 +33,7 @@ services:
       DB_URL: ${DB_URL:-jdbc:postgresql://postgres:5432/gastos}
       DB_USER: ${DB_USER:-gastos}
       DB_PASSWORD: ${DB_PASSWORD:-gastos_dev_password}
-      JWT_SECRET: ${JWT_SECRET:-troque_este_segredo_em_producao_use_256bits}
+      JWT_SECRET: ${JWT_SECRET:-Z2VzdG9yLWRlLWdhc3Rvcy1qd3Qtc2VjcmV0LWRldi0yNTZi}
     depends_on:
       postgres:
         condition: service_healthy
