@@ -11,8 +11,10 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { CategoryService } from '../../core/services/category.service';
 import { PersonService } from '../../core/services/person.service';
 import { TransactionService } from '../../core/services/transaction.service';
+import { CardService } from '../../cards/services/card.service';
 import { Category } from '../../core/models/category.models';
 import { Person } from '../../core/models/person.models';
+import { Card } from '../../cards/models/card.model';
 import {
   Transaction,
   CreateTransactionRequest,
@@ -47,16 +49,19 @@ export class TransactionFormComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private personService = inject(PersonService);
   private transactionService = inject(TransactionService);
+  private cardService = inject(CardService);
   private dialogRef = inject(MatDialogRef<TransactionFormComponent>);
   protected data: TransactionFormDialogData = inject(MAT_DIALOG_DATA);
 
   protected loading = signal(false);
   protected loadingCategories = signal(false);
   protected loadingPersons = signal(false);
+  protected loadingCards = signal(false);
   protected apiError = signal<string | null>(null);
   protected fieldErrors = signal<Record<string, string>>({});
   protected categories = signal<Category[]>([]);
   protected persons = signal<Person[]>([]);
+  protected cards = signal<Card[]>([]);
 
   protected form = this.fb.group({
     type: ['EXPENSE' as TransactionType, [Validators.required]],
@@ -66,12 +71,26 @@ export class TransactionFormComponent implements OnInit {
     categoryId: ['', [Validators.required]],
     paidByPersonId: ['', [Validators.required]],
     paymentMethod: ['PIX', [Validators.required]],
+    cardId: [null as string | null],
     splitRule: ['FIFTY_FIFTY', [Validators.required]],
   });
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadPersons();
+    this.loadCards();
+
+    // Observa mudanças no método de pagamento para controlar o campo cartão
+    this.form.get('paymentMethod')!.valueChanges.subscribe((method) => {
+      const cardIdControl = this.form.get('cardId')!;
+      if (method === 'CREDIT') {
+        cardIdControl.setValidators([Validators.required]);
+      } else {
+        cardIdControl.clearValidators();
+        cardIdControl.setValue(null);
+      }
+      cardIdControl.updateValueAndValidity();
+    });
 
     const tx = this.data.transaction;
     if (tx) {
@@ -83,9 +102,14 @@ export class TransactionFormComponent implements OnInit {
         categoryId: tx.category.id,
         paidByPersonId: tx.paidByPerson.id,
         paymentMethod: tx.paymentMethod,
+        cardId: tx.cardId ?? null,
         splitRule: tx.splitRule,
       });
     }
+  }
+
+  protected get isCreditPayment(): boolean {
+    return this.form.get('paymentMethod')?.value === 'CREDIT';
   }
 
   protected setType(type: TransactionType): void {
@@ -115,6 +139,7 @@ export class TransactionFormComponent implements OnInit {
         categoryId: v.categoryId!,
         paidByPersonId: v.paidByPersonId!,
         paymentMethod: v.paymentMethod as UpdateTransactionRequest['paymentMethod'],
+        cardId: v.paymentMethod === 'CREDIT' ? (v.cardId ?? undefined) : undefined,
         splitRule: v.splitRule as UpdateTransactionRequest['splitRule'],
         installmentsTotal: 1,
         version: this.data.transaction.version,
@@ -138,6 +163,7 @@ export class TransactionFormComponent implements OnInit {
         categoryId: v.categoryId!,
         paidByPersonId: v.paidByPersonId!,
         paymentMethod: v.paymentMethod as CreateTransactionRequest['paymentMethod'],
+        cardId: v.paymentMethod === 'CREDIT' ? (v.cardId ?? undefined) : undefined,
         splitRule: v.splitRule as CreateTransactionRequest['splitRule'],
         installmentsTotal: 1,
       };
@@ -190,6 +216,19 @@ export class TransactionFormComponent implements OnInit {
       },
       error: () => {
         this.loadingPersons.set(false);
+      },
+    });
+  }
+
+  private loadCards(): void {
+    this.loadingCards.set(true);
+    this.cardService.getAll().subscribe({
+      next: (cs: Card[]) => {
+        this.cards.set(cs);
+        this.loadingCards.set(false);
+      },
+      error: () => {
+        this.loadingCards.set(false);
       },
     });
   }

@@ -120,10 +120,10 @@
           <mat-label>Forma de pagamento</mat-label>
           <mat-select formControlName="paymentMethod">
             <mat-option value="CASH">Dinheiro</mat-option>
-            <mat-option value="DEBIT">Debito</mat-option>
-            <mat-option value="CREDIT">Credito</mat-option>
+            <mat-option value="DEBIT">Débito</mat-option>
+            <mat-option value="CREDIT">Crédito</mat-option>
             <mat-option value="PIX">Pix</mat-option>
-            <mat-option value="TRANSFER">Transferencia</mat-option>
+            <mat-option value="TRANSFER">Transferência</mat-option>
           </mat-select>
           @if (form.get('paymentMethod')?.hasError('required') && form.get('paymentMethod')?.touched) {
             <mat-error>Selecione a forma de pagamento.</mat-error>
@@ -131,7 +131,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="tf-field">
-          <mat-label>Divisao</mat-label>
+          <mat-label>Divisão</mat-label>
           <mat-select formControlName="splitRule">
             <mat-option value="FIFTY_FIFTY">50 / 50</mat-option>
             <mat-option value="PERSON_A">Somente A</mat-option>
@@ -140,10 +140,41 @@
           </mat-select>
           <mat-hint>Como o valor entra no acerto de contas.</mat-hint>
           @if (form.get('splitRule')?.hasError('required') && form.get('splitRule')?.touched) {
-            <mat-error>Selecione a regra de divisao.</mat-error>
+            <mat-error>Selecione a regra de divisão.</mat-error>
           }
         </mat-form-field>
       </div>
+
+      <!-- Campo cartão — visível apenas quando método = crédito -->
+      @if (isCreditPayment) {
+        <mat-form-field appearance="outline" class="tf-field tf-field--full">
+          <mat-label>Cartão de crédito</mat-label>
+          <mat-icon matPrefix>credit_card</mat-icon>
+          <mat-select formControlName="cardId">
+            @if (loadingCards()) {
+              <mat-option disabled>Carregando cartões...</mat-option>
+            } @else if (cards().length === 0) {
+              <mat-option disabled>Nenhum cartão cadastrado. Acesse Cartões para adicionar.</mat-option>
+            } @else {
+              @for (card of cards(); track card.id) {
+                <mat-option [value]="card.id">
+                  <span class="card-option">
+                    <mat-icon class="card-option__icon">credit_card</mat-icon>
+                    <span>{{ card.name }}</span>
+                    <span class="card-option__owner">— {{ card.ownerPersonName }}</span>
+                  </span>
+                </mat-option>
+              }
+            }
+          </mat-select>
+          @if (form.get('cardId')?.hasError('required') && form.get('cardId')?.touched) {
+            <mat-error>Selecione o cartão para pagamento no crédito.</mat-error>
+          }
+          @if (fieldErrors()['cardId']) {
+            <mat-error>{{ fieldErrors()['cardId'] }}</mat-error>
+          }
+        </mat-form-field>
+      }
 
     </form>
   </mat-dialog-content>

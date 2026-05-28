@@ -19,5 +19,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./transactions/transactions.routes').then(m => m.transactionsRoutes),
   },
+  {
+    path: 'cards',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./cards/cards.routes').then(m => m.cardsRoutes),
+  },
   { path: '**', redirectTo: '/auth/login' },
 ];

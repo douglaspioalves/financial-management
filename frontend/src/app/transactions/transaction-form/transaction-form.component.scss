@@ -161,6 +161,26 @@
   }
 }
 
+.card-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+
+  &__icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  &__owner {
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+  }
+}
+
 ::ng-deep .mat-mdc-dialog-content {
   padding: 8px 20px 4px !important;
   max-height: 60vh;
