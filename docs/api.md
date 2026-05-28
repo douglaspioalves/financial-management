@@ -692,22 +692,129 @@ Remove permanentemente um cartão de crédito.
 
 ---
 
-## Fatia 3b — Parcelamentos (Sprint 03 — a implementar após Fatia 3a)
+## Fatia 3b — Parcelamentos (Sprint 04)
 
-Endpoints previstos:
-- `POST /api/transactions` com `installmentsTotal > 1` (habilitado)
-- `GET /api/transactions/{id}/installments`
+> Schema já existente em V2__initial_schema.sql: tabela `installment` com id,
+> transaction_id (FK → transaction, ON DELETE CASCADE), number (int), amount (NUMERIC 12,2),
+> reference_month (DATE, sempre dia 1). Índices em `reference_month` e `transaction_id`
+> já criados. **Nenhuma migration nova é necessária para esta fatia.**
+>
+> Algoritmo canônico de cálculo do `reference_month`:
+> ver `memory/decisions/2026-05-28-installment-reference-month-algorithm.md`.
 
 ---
 
-## Fatia 4 — Dashboard (Sprint 04 — a detalhar)
+### POST /api/transactions (atualizado — parcelamento habilitado)
+
+Mesmo endpoint da Fatia 2, agora com suporte a `installmentsTotal > 1`.
+
+Quando `installmentsTotal >= 2`:
+- `paymentMethod` deve ser `CREDIT` (obrigatório)
+- `cardId` deve estar preenchido com um cartão existente (obrigatório)
+- O backend cria a `Transaction` e gera automaticamente N registros em `Installment`
+- Cada `Installment` tem `reference_month` calculado conforme o algoritmo do `closingDay` do cartão
+- A última parcela absorve a diferença de centavos (arredondamento DOWN nas demais)
+
+**Validações adicionais para parcelamento:**
+
+| Regra | Mensagem de erro |
+|-------|-----------------|
+| `installmentsTotal >= 2` sem `paymentMethod = CREDIT` | "Compras parceladas só podem ser feitas com cartão de crédito." |
+| `installmentsTotal >= 2` sem `cardId` | "Pagamento parcelado exige a seleção de um cartão de crédito." |
+| `installmentsTotal` < 1 | "O número de parcelas deve ser pelo menos 1." |
+| `installmentsTotal` > 48 | "O número máximo de parcelas é 48." |
+
+**Response 201:** mesmo formato de antes, com `installmentsTotal` refletindo o valor enviado.
+
+**Comportamento de edição e exclusão de lançamentos parcelados:**
+- `PUT /api/transactions/{id}`: **bloqueado** para lançamentos com `installmentsTotal > 1`.
+  Retorna 422 com mensagem: "Lançamentos parcelados não podem ser editados individualmente.
+  Exclua e recrie o lançamento se necessário."
+- `DELETE /api/transactions/{id}`: **permitido** e remove a `Transaction` + todas as
+  `Installment` filhas (ON DELETE CASCADE no banco). Retorna 204.
+
+| Status adicional | Situação |
+|-----------------|----------|
+| 201 | Lançamento parcelado criado; N installments geradas |
+| 400 | `installmentsTotal` fora do intervalo 1–48 |
+| 400 | Parcelado sem `paymentMethod = CREDIT` |
+| 400 | Parcelado sem `cardId` |
+
+---
+
+### GET /api/transactions/{id}/installments
+
+Lista todas as parcelas de um lançamento, ordenadas por `number` ascendente.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do lançamento (Transaction)
+
+**Response 200:**
+```json
+[
+  {
+    "id":             "uuid",
+    "number":         1,
+    "amount":         500.00,
+    "referenceMonth": "2026-05-01"
+  },
+  {
+    "id":             "uuid",
+    "number":         2,
+    "amount":         500.00,
+    "referenceMonth": "2026-06-01"
+  },
+  {
+    "id":             "uuid",
+    "number":         3,
+    "amount":         500.17,
+    "referenceMonth": "2026-07-01"
+  }
+]
+```
+
+Notas sobre o response:
+- `referenceMonth` é sempre o primeiro dia do mês (`yyyy-MM-01`).
+- Para lançamentos à vista (`installmentsTotal = 1`), retorna lista vazia `[]`.
+- A soma de todos os `amount` é sempre igual ao `amount` da `Transaction` pai.
+
+| Status | Situação |
+|--------|----------|
+| 200 | Lista retornada (vazia se lançamento à vista) |
+| 401 | Token ausente ou inválido |
+| 404 | Lançamento não encontrado — "Lançamento não encontrado." |
+
+---
+
+### Contrato fechado — regras que Backend e Frontend devem seguir
+
+1. `TransactionResponse` inclui `installmentsTotal` em todos os GETs (já incluía).
+2. Frontend deve exibir badge "N/M" (ex.: "1/3", "2/3", "3/3") na lista de lançamentos
+   parcelados, chamando `GET /api/transactions/{id}/installments` apenas ao expandir o item.
+3. Lançamentos parcelados NÃO exibem botão "Editar" na lista — apenas "Excluir" (que
+   remove a transaction e todas as parcelas via cascade).
+4. O campo `cardId` no `TransactionResponse` deve ser expandido para incluir o nome do cartão
+   em lançamentos parcelados (facilita exibição no frontend):
+   ```json
+   "card": {
+     "id":   "uuid",
+     "name": "string"
+   }
+   ```
+   Para lançamentos sem cartão, `"card": null`.
+   **Atenção:** isso é uma atualização do `TransactionResponse` — backend deve ajustar.
+
+---
+
+## Fatia 4 — Dashboard (Sprint 05 — a detalhar)
 
 Endpoints previstos:
 - `GET /api/dashboard?month=yyyy-MM`
 
 ---
 
-## Fatia 5 — Orçamento e Recorrência (Sprint 05 — a detalhar)
+## Fatia 5 — Orçamento e Recorrência (Sprint 06 — a detalhar)
 
 Endpoints previstos:
 - `GET /api/budgets?month=yyyy-MM`
@@ -721,7 +828,7 @@ Endpoints previstos:
 
 ---
 
-## Fatia 6 — Acerto de Contas (Sprint 06 — a detalhar)
+## Fatia 6 — Acerto de Contas (Sprint 07 — a detalhar)
 
 Endpoints previstos:
 - `GET /api/settlement?month=yyyy-MM`
@@ -736,5 +843,8 @@ Endpoints previstos:
 | 2 | Retornar `version` nos GETs de categorias | Frontend precisa para enviar no PUT | CONCLUÍDO — backend inclui `version` nos DTOs | 02 |
 | 3 | Status 422 vs 400 para categoria incompatível | Consistência de status codes | CONCLUÍDO — adotado 422 para incompatibilidade de tipo | 02 |
 | 4 | Paginação de `/api/transactions` | Não necessária agora (base pequena) | Avaliar se o volume crescer | futuro |
-| 5 | Integração de `cardId` no formulário de lançamentos | Frontend ainda não integra seleção de cartão | Frontend Sprint 03 — tarefa S-03-02 | 03 |
-| 6 | `DELETE /api/transactions` para parcelados | Bloqueado no Sprint 02; precisa cascade installments | Backend Sprint 03 — após Fatia 3b implementada | 03 |
+| 5 | Integração de `cardId` no formulário de lançamentos | Frontend ainda não integra seleção de cartão | CONCLUÍDO — Frontend Sprint 03 (S-03-02) | 03 |
+| 6 | `DELETE /api/transactions` para parcelados | Bloqueado no Sprint 02; precisa cascade installments | CONCLUÍDO — ON DELETE CASCADE já no schema V2; habilitado no Sprint 04 | 04 |
+| 7 | `PUT /api/transactions/{id}` para parcelados | Comportamento indefinido antes do Sprint 04 | DEFINIDO — retorna 422; lançamentos parcelados não editáveis individualmente | 04 |
+| 8 | `TransactionResponse.cardId` → expandir para objeto `card` | Frontend precisa do nome do cartão na lista | Backend Sprint 04 — ajustar DTO de resposta | 04 |
+| 9 | `closing_day` >= 29 em meses curtos (fev) | Possível confusão no cálculo de reference_month | DOCUMENTADO — algoritmo correto; purchaseDate.dayOfMonth nunca excede 28 em fev | 04 |
