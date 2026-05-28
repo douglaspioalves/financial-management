@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 1)
 **Fatia:** 3a
 **Objetivo:** Cadastrar cartões de crédito com fechamento e vencimento; selecionar no lançamento.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🔵 EM ANDAMENTO
 
 ---
 
@@ -30,8 +30,21 @@ DIA 9–10 (fechamento)
 
 ## Backlog do sprint
 
+### S-03-00 · Validar schema e índices (DBA)
+**Papel:** DBA | **Pontos:** 1 | **Status:** `PENDENTE`
+
+| Tarefa | Papel | Status |
+|---|---|---|
+| Verificar campos e constraints da tabela `card` em V2 | DBA | PENDENTE |
+| Criar V6__add_transaction_card_index.sql (índice ausente identificado) | DBA | PENDENTE |
+| Documentar resultado neste arquivo | DBA | PENDENTE |
+
+> **Atenção:** índice `transaction(card_id)` está ausente em V2. Branch: `feature/s03-schema`.
+
+---
+
 ### S-03-01 · API de cartões
-**Papel:** Backend | **Pontos:** 3 | **Status:** `PENDENTE`
+**Papel:** Backend | **Pontos:** 3 | **Depende de:** S-03-00 | **Status:** `PENDENTE`
 
 | Tarefa | Papel | Status |
 |---|---|---|
@@ -61,7 +74,7 @@ DIA 9–10 (fechamento)
 
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
-| 1 | — | — | — |
+| 1 | 2026-05-28 | Planning concluído; contrato da API definido em docs/api.md | — |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
@@ -76,10 +89,12 @@ DIA 9–10 (fechamento)
 
 ## Definition of Done
 
-- [ ] S-03-01: CRUD de cartões; validações de dia corretas
+- [ ] S-03-00: schema validado; V6__add_transaction_card_index.sql criada e aplicada
+- [ ] S-03-01: CRUD de cartões; validações de dia corretas; delete bloqueia com 409 se há transações
 - [ ] S-03-02: Tela de cartões funcional; seleção integrada no formulário de lançamento
 - [ ] Campo cartão visível só quando método = crédito
-- [ ] Testes passando: `./mvnw test`
+- [ ] S-03-03: Testes passando (TC-01 a TC-11): `./mvnw test`
+- [ ] S-03-04: Revisão sem itens bloqueantes; `docker compose up --build` OK; tag sprint-03
 - [ ] Review registrada em `memory/reviews/review-sprint-03.md`
 - [ ] Retro registrada em `memory/retros/retro-sprint-03.md`
 - [ ] Learnings atualizados em `memory/learnings/`

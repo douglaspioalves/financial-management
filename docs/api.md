@@ -514,13 +514,187 @@ Remove permanentemente um lançamento.
 
 ---
 
-## Fatia 3 — Cartões e Parcelamentos (Sprint 03 — a detalhar)
+## Fatia 3a — Cartões (Sprint 03)
+
+> Schema já existente em V2__initial_schema.sql. Nenhuma migration nova é necessária
+> para esta fatia. O DBA deve apenas validar índices e constraints existentes.
+
+---
+
+### GET /api/cards
+
+Lista todos os cartões cadastrados, ordenados por nome.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response 200:**
+```json
+[
+  {
+    "id":              "uuid",
+    "name":            "string",
+    "ownerPersonId":   "uuid",
+    "ownerPersonName": "string",
+    "closingDay":      "integer (1–31)",
+    "dueDay":          "integer (1–31)",
+    "version":         "integer"
+  }
+]
+```
+
+| Status | Situação |
+|--------|----------|
+| 200 | Lista retornada (pode ser `[]`) |
+| 401 | Token ausente ou inválido |
+
+---
+
+### POST /api/cards
+
+Cria um novo cartão de crédito.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "name":          "string (1–100 chars, obrigatório)",
+  "ownerPersonId": "uuid (obrigatório)",
+  "closingDay":    "integer 1–31 (obrigatório)",
+  "dueDay":        "integer 1–31 (obrigatório)"
+}
+```
+
+**Validações:**
+- `name`: não pode ser vazio; máximo 100 caracteres
+- `ownerPersonId`: deve referenciar uma `Person` existente
+- `closingDay`: inteiro entre 1 e 31 (inclusive)
+- `dueDay`: inteiro entre 1 e 31 (inclusive)
+
+**Response 201:**
+```json
+{
+  "id":              "uuid",
+  "name":            "string",
+  "ownerPersonId":   "uuid",
+  "ownerPersonName": "string",
+  "closingDay":      "integer",
+  "dueDay":          "integer",
+  "version":         0
+}
+```
+
+| Status | Situação |
+|--------|----------|
+| 201 | Cartão criado com sucesso |
+| 400 | Campo inválido — mensagens específicas por campo |
+| 401 | Token ausente ou inválido |
+| 404 | `ownerPersonId` não encontrado — "Participante não encontrado." |
+
+**Mensagens de erro por campo:**
+- `name` vazio: `"Nome do cartão é obrigatório."`
+- `name` > 100 chars: `"Nome do cartão deve ter no máximo 100 caracteres."`
+- `ownerPersonId` nulo: `"Titular do cartão é obrigatório."`
+- `closingDay` nulo: `"Dia de fechamento é obrigatório."`
+- `closingDay` fora de 1–31: `"Dia de fechamento deve estar entre 1 e 31."`
+- `dueDay` nulo: `"Dia de vencimento é obrigatório."`
+- `dueDay` fora de 1–31: `"Dia de vencimento deve estar entre 1 e 31."`
+
+---
+
+### GET /api/cards/{id}
+
+Retorna o detalhe de um cartão específico.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do cartão
+
+**Response 200:** mesmo formato de item do `GET /api/cards`.
+
+| Status | Situação |
+|--------|----------|
+| 200 | Cartão encontrado |
+| 401 | Token ausente ou inválido |
+| 404 | Cartão não encontrado — "Cartão não encontrado." |
+
+---
+
+### PUT /api/cards/{id}
+
+Edita um cartão existente. Todos os campos editáveis devem ser enviados.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do cartão
+
+**Request:**
+```json
+{
+  "name":          "string (1–100 chars, obrigatório)",
+  "ownerPersonId": "uuid (obrigatório)",
+  "closingDay":    "integer 1–31 (obrigatório)",
+  "dueDay":        "integer 1–31 (obrigatório)",
+  "version":       "integer (obrigatório — optimistic locking)"
+}
+```
+
+O campo `version` implementa optimistic locking. O frontend deve enviar o valor
+recebido na última leitura. Se outro usuário editou o registro entretanto, retorna 409.
+
+**Response 200:**
+```json
+{
+  "id":              "uuid",
+  "name":            "string",
+  "ownerPersonId":   "uuid",
+  "ownerPersonName": "string",
+  "closingDay":      "integer",
+  "dueDay":          "integer",
+  "version":         "integer (versão atualizada)"
+}
+```
+
+| Status | Situação |
+|--------|----------|
+| 200 | Cartão atualizado com sucesso |
+| 400 | Campo inválido — mensagens específicas (idem ao POST) |
+| 401 | Token ausente ou inválido |
+| 404 | Cartão não encontrado — "Cartão não encontrado." |
+| 404 | `ownerPersonId` não encontrado — "Participante não encontrado." |
+| 409 | Conflito de versão — "O registro foi alterado por outro usuário. Recarregue e tente novamente." |
+
+---
+
+### DELETE /api/cards/{id}
+
+Remove permanentemente um cartão de crédito.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do cartão
+
+**Comportamento:**
+- Se o cartão possuir transações vinculadas (`card_id` em qualquer `transaction`),
+  a exclusão é **bloqueada** com status 409.
+- Se não houver transações vinculadas, o cartão é removido fisicamente.
+
+> Decisão de arquitetura: ver `memory/decisions/2026-05-28-card-delete-policy.md`.
+
+**Response 204:** sem body
+
+| Status | Situação |
+|--------|----------|
+| 204 | Cartão removido com sucesso |
+| 401 | Token ausente ou inválido |
+| 404 | Cartão não encontrado — "Cartão não encontrado." |
+| 409 | Cartão possui lançamentos vinculados e não pode ser excluído — "Este cartão possui lançamentos vinculados e não pode ser excluído. Remova os lançamentos antes de excluir o cartão." |
+
+---
+
+## Fatia 3b — Parcelamentos (Sprint 03 — a implementar após Fatia 3a)
 
 Endpoints previstos:
-- `GET /api/cards`
-- `POST /api/cards`
-- `PUT /api/cards/{id}`
-- `DELETE /api/cards/{id}`
 - `POST /api/transactions` com `installmentsTotal > 1` (habilitado)
 - `GET /api/transactions/{id}/installments`
 
@@ -556,9 +730,11 @@ Endpoints previstos:
 
 ## Pontos em aberto
 
-| # | Ponto | Impacto | Ação necessária |
-|---|-------|---------|-----------------|
-| 1 | Migration V4 para coluna `inactive` em `category` | DBA deve criar antes do backend | Agente DBA — início do Sprint 02 |
-| 2 | Retornar `version` nos GETs de categorias | Frontend precisa para enviar no PUT | Backend incluir no DTO de resposta |
-| 3 | Status 422 vs 400 para categoria incompatível | Consistência de status codes | Backend decidir e manter consistente |
-| 4 | Paginação de `/api/transactions` | Não necessária agora (base pequena) | Avaliar se o volume crescer |
+| # | Ponto | Impacto | Ação necessária | Sprint |
+|---|-------|---------|-----------------|--------|
+| 1 | Migration V4 para coluna `inactive` em `category` | DBA deve criar antes do backend | CONCLUÍDO — V4__add_category_inactive.sql aplicada | 02 |
+| 2 | Retornar `version` nos GETs de categorias | Frontend precisa para enviar no PUT | CONCLUÍDO — backend inclui `version` nos DTOs | 02 |
+| 3 | Status 422 vs 400 para categoria incompatível | Consistência de status codes | CONCLUÍDO — adotado 422 para incompatibilidade de tipo | 02 |
+| 4 | Paginação de `/api/transactions` | Não necessária agora (base pequena) | Avaliar se o volume crescer | futuro |
+| 5 | Integração de `cardId` no formulário de lançamentos | Frontend ainda não integra seleção de cartão | Frontend Sprint 03 — tarefa S-03-02 | 03 |
+| 6 | `DELETE /api/transactions` para parcelados | Bloqueado no Sprint 02; precisa cascade installments | Backend Sprint 03 — após Fatia 3b implementada | 03 |
