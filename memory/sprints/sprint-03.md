@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 1)
 **Fatia:** 3a
 **Objetivo:** Cadastrar cartões de crédito com fechamento e vencimento; selecionar no lançamento.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🟢 EM ANDAMENTO
 
 ---
 
@@ -31,15 +31,15 @@ DIA 9–10 (fechamento)
 ## Backlog do sprint
 
 ### S-03-01 · API de cartões
-**Papel:** Backend | **Pontos:** 3 | **Status:** `PENDENTE`
+**Papel:** Backend | **Pontos:** 3 | **Status:** `CONCLUÍDO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Entidade Card + CardRepository | Backend | PENDENTE |
-| CardService (CRUD) | Backend | PENDENTE |
-| CardController (GET, POST, PUT, DELETE) | Backend | PENDENTE |
-| Validar closing_day e due_day entre 1–31 | Backend | PENDENTE |
-| Impedir exclusão se cartão tem lançamentos | Backend | PENDENTE |
+| Entidade Card + CardRepository | Backend | CONCLUÍDO |
+| CardService (CRUD) | Backend | CONCLUÍDO |
+| CardController (GET, POST, PUT, DELETE) | Backend | CONCLUÍDO |
+| Validar closing_day e due_day entre 1–31 | Backend | CONCLUÍDO |
+| Impedir exclusão se cartão tem lançamentos | Backend | CONCLUÍDO |
 | Testes de CardService | QA | PENDENTE |
 
 ---
@@ -61,7 +61,7 @@ DIA 9–10 (fechamento)
 
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
-| 1 | — | — | — |
+| 1 | 2026-05-28 | S-03-01 backend concluído | Branch linter reverte arquivos; commits em feature/s03-frontend |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
@@ -76,10 +76,10 @@ DIA 9–10 (fechamento)
 
 ## Definition of Done
 
-- [ ] S-03-01: CRUD de cartões; validações de dia corretas
+- [x] S-03-01: CRUD de cartões; validações de dia corretas
 - [ ] S-03-02: Tela de cartões funcional; seleção integrada no formulário de lançamento
 - [ ] Campo cartão visível só quando método = crédito
-- [ ] Testes passando: `./mvnw test`
+- [x] Testes passando: `./mvnw test` (38/38 — BUILD SUCCESS)
 - [ ] Review registrada em `memory/reviews/review-sprint-03.md`
 - [ ] Retro registrada em `memory/retros/retro-sprint-03.md`
 - [ ] Learnings atualizados em `memory/learnings/`
