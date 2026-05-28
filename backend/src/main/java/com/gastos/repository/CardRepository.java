@@ -9,6 +9,4 @@ import java.util.UUID;
 public interface CardRepository extends JpaRepository<Card, UUID> {
 
     List<Card> findAllByOrderByNameAsc();
-
-    boolean existsByOwnerId(UUID ownerId);
 }
