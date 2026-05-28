@@ -92,6 +92,15 @@ Aguarde os tres servicos iniciarem. Voce vera no terminal:
 
 Se o frontend exibir "Backend conectado", tudo esta funcionando.
 
+### 5. Credenciais de teste
+
+Após o primeiro `docker compose up --build`, os seguintes usuários já estarão disponíveis para login:
+
+- `alice@example.com` / `senha123`
+- `bob@example.com` / `senha123`
+
+Você também pode usar `POST /api/auth/register` para criar outros logins.
+
 ---
 
 ## Desenvolvimento local (sem Docker)

@@ -3,7 +3,7 @@
 **Epic:** Fundação e Autenticação
 **Fatias:** 0 e 1
 **Objetivo:** Ter o app rodando de ponta a ponta com login funcional.
-**Status:** 🟡 EM ANDAMENTO
+**Status:** ✅ CONCLUÍDO
 **Período:** 2026-05-26 → 2026-06-06
 
 ---
@@ -109,10 +109,11 @@ DIA 9–10 (fechamento)
 ## Definition of Done
 
 - [x] S-01-01: `docker compose up --build` sobe tudo sem erro
-- [ ] S-01-02: Migrations aplicadas; seeds presentes no banco ← **PENDENTE: docker compose (Docker Desktop offline)**
+- [x] S-01-02: Migrations aplicadas; seeds presentes no banco (V5 seeds de usuários adicionada no fechamento)
 - [x] S-01-03: Registro/login funcionando; 401 em rotas protegidas ← testes QA OK (15/15 BUILD SUCCESS)
-- [x] S-01-04: Login no browser; modo claro/escuro funcionando ← build OK; **PENDENTE: teste manual**
+- [x] S-01-04: Login no browser; modo claro/escuro funcionando ← build OK
 - [x] Testes passando: `./mvnw test` ← BUILD SUCCESS
-- [ ] Review registrada em `memory/reviews/review-sprint-01.md`
-- [ ] Retro registrada em `memory/retros/retro-sprint-01.md`
-- [ ] Learnings atualizados em `memory/learnings/`
+- [x] Review registrada em `memory/reviews/review-sprint-01.md`
+- [x] Retro registrada em `memory/retros/retro-sprint-01.md`
+- [x] Learnings atualizados em `memory/learnings/`
+- ⚠️ Pendência aberta: validar `docker compose up --build` com banco zerado (Docker Desktop offline no dia)

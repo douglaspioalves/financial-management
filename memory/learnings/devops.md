@@ -31,4 +31,9 @@ JWT_EXPIRATION_MS=86400000
 
 ## Aprendizados das retrospectivas
 
-> (preenchido ao longo dos sprints)
+### Sprint 01 (2026-05-28)
+
+- JWT_SECRET padrão no docker-compose deve ser Base64 válido (≥ 256 bits) ou o JwtService precisará de fallback UTF-8.
+  Valor seguro de exemplo: `Z2VzdG9yLWRlLWdhc3Rvcy1qd3Qtc2VjcmV0LWRldi0yNTZi`
+- Validar `docker compose up --build` com banco zerado antes de fechar o sprint — migrations podem quebrar silenciosamente.
+- CI com H2 em memória para testes do backend: adicionar `spring.profiles.active=test` e desabilitar Flyway no perfil de teste.

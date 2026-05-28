@@ -37,7 +37,20 @@
       "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/dashboard)",
       "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/login)",
       "Bash(mkdir -p /mnt/c/Workspace/Java/financial-management/frontend/src/app/auth/register)",
-      "Bash(git stash *)"
+      "Bash(git stash *)",
+      "Bash(git merge *)",
+      "Bash(git tag *)",
+      "Bash(docker compose *)",
+      "Bash(docker info *)",
+      "Bash(docker stop cobranca-local-control-plane *)",
+      "Bash(curl -s http://localhost:8080/api/health)",
+      "Bash(curl -s http://localhost:4200)",
+      "Bash(curl *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(docker exec gastos-postgres *)",
+      "Bash(xargs grep -A 30 \"authenticationManager\\\\|PasswordEncoder\\\\|DaoAuthentication\")",
+      "Bash(xargs cat)",
+      "Bash(xargs grep -A 5 \"getPassword\\\\|passwordHash\\\\|UserDetails\\\\|implements\")"
     ]
   }
 }
