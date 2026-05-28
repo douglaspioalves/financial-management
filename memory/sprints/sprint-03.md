@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 1)
 **Fatia:** 3a
 **Objetivo:** Cadastrar cartões de crédito com fechamento e vencimento; selecionar no lançamento.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🔵 EM ANDAMENTO
 
 ---
 
@@ -29,6 +29,21 @@ DIA 9–10 (fechamento)
 ---
 
 ## Backlog do sprint
+
+### S-03-00 · Validar schema e índices (DBA)
+**Papel:** DBA | **Pontos:** 1 | **Status:** `CONCLUIDO`
+
+| Tarefa | Papel | Status |
+|---|---|---|
+| Verificar campos e constraints da tabela `card` em V2 | DBA | CONCLUIDO |
+| Criar V6__add_transaction_card_index.sql (índice ausente identificado) | DBA | CONCLUIDO |
+| Documentar resultado neste arquivo | DBA | CONCLUIDO |
+
+> **Resultado:** tabela `card` em V2 completa (campos, constraints, FKs).
+> `idx_transaction_card_id ON transaction(card_id)` criado em V6.
+> `./mvnw test` → BUILD SUCCESS (38 testes, 0 falhas). Branch: `feature/s03-schema`.
+
+---
 
 ### S-03-01 · API de cartões
 **Papel:** Backend | **Pontos:** 3 | **Status:** `PENDENTE`
@@ -61,7 +76,7 @@ DIA 9–10 (fechamento)
 
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
-| 1 | — | — | — |
+| 1 | 2026-05-28 | S-03-00 CONCLUIDO (DBA): V6 índice card_id criado; schema validado | — |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
@@ -76,7 +91,8 @@ DIA 9–10 (fechamento)
 
 ## Definition of Done
 
-- [ ] S-03-01: CRUD de cartões; validações de dia corretas
+- [x] S-03-00: schema validado; V6__add_transaction_card_index.sql criada e aplicada
+- [ ] S-03-01: CRUD de cartões; validações de dia corretas; delete bloqueia com 409 se há transações
 - [ ] S-03-02: Tela de cartões funcional; seleção integrada no formulário de lançamento
 - [ ] Campo cartão visível só quando método = crédito
 - [ ] Testes passando: `./mvnw test`
