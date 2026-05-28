@@ -1,0 +1,177 @@
+// ── Dialog container ──────────────────────────────────────────────────────────
+.tf-dialog {
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+// ── Cabeçalho ─────────────────────────────────────────────────────────────────
+.tf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 0;
+}
+
+// Toggle Despesa / Receita
+.tf-header__type-toggle {
+  display: flex;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-surface);
+}
+
+.type-btn {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 7px 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+
+  &--active-expense {
+    background: var(--color-expense);
+    color: #fff;
+  }
+
+  &--active-income {
+    background: var(--color-income);
+    color: #fff;
+  }
+}
+
+.close-btn {
+  color: var(--color-text-secondary);
+}
+
+// ── Título ────────────────────────────────────────────────────────────────────
+.tf-title {
+  font-family: var(--font-display) !important;
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: var(--color-text-primary);
+  padding: 8px 20px 4px !important;
+  margin: 0 !important;
+}
+
+// ── Formulário ────────────────────────────────────────────────────────────────
+.tf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.tf-field {
+  width: 100%;
+
+  &--full {
+    width: 100%;
+  }
+}
+
+.tf-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Erro da API ───────────────────────────────────────────────────────────────
+.api-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--color-expense) 12%, var(--color-bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-expense) 35%, transparent);
+  border-radius: var(--radius-sm);
+  color: var(--color-expense);
+  font-size: 0.87rem;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+}
+
+// ── Opções de select ──────────────────────────────────────────────────────────
+.cat-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.person-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.person-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+// ── Ações ─────────────────────────────────────────────────────────────────────
+.tf-actions {
+  padding: 8px 20px 20px !important;
+  gap: 12px;
+}
+
+.btn-cancel {
+  font-family: var(--font-body);
+  border-radius: var(--radius-sm) !important;
+  color: var(--color-text-secondary);
+}
+
+.btn-save {
+  font-family: var(--font-body);
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  min-width: 148px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:disabled {
+    opacity: 0.65;
+  }
+}
+
+// ── Material overrides ────────────────────────────────────────────────────────
+::ng-deep .mat-mdc-dialog-content {
+  padding: 8px 20px 4px !important;
+  max-height: 60vh;
+  overflow-y: auto;
+}
