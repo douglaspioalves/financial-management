@@ -1,0 +1,181 @@
+<div class="budget-page">
+  <!-- Header -->
+  <header class="budget-header">
+    <div class="brand">
+      <div class="brand__logo">G</div>
+      <div>
+        <b class="brand__name">Gastos do Casal</b>
+        <small class="brand__sub">orçamentos</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button
+              [matTooltip]="theme.isDark() ? 'Modo claro' : 'Modo escuro'"
+              (click)="theme.toggle()">
+        <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <a routerLink="/dashboard" mat-icon-button matTooltip="Painel">
+        <mat-icon>home</mat-icon>
+      </a>
+    </div>
+  </header>
+
+  <!-- Navegação de mês -->
+  <div class="month-nav">
+    <button mat-icon-button (click)="previousMonth()" matTooltip="Mês anterior">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+    <h2 class="month-nav__label">{{ monthLabel() }}</h2>
+    <button mat-icon-button (click)="nextMonth()" matTooltip="Próximo mês">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <!-- Resumo geral -->
+  @if (budgets().length > 0 && !loading()) {
+    <div class="summary-card card">
+      <div class="summary-card__row">
+        <div class="summary-card__info">
+          <span class="summary-card__label">Total gasto</span>
+          <span class="summary-card__value amount amount--negative">
+            {{ formatCurrency(totalSpent()) }}
+          </span>
+        </div>
+        <div class="summary-card__info summary-card__info--right">
+          <span class="summary-card__label">Limite total</span>
+          <span class="summary-card__value amount">
+            {{ formatCurrency(totalLimit()) }}
+          </span>
+        </div>
+      </div>
+      <div class="summary-card__bar-wrap">
+        <mat-progress-bar
+          mode="determinate"
+          [value]="overallPercentage()"
+          class="summary-progress"
+          [class.progress--warning]="overallPercentage() > 70 && overallPercentage() <= 100"
+          [class.progress--exceeded]="overallPercentage() > 100"
+        ></mat-progress-bar>
+        <span class="summary-card__pct">{{ overallPercentage() }}%</span>
+      </div>
+    </div>
+  }
+
+  <!-- Conteúdo principal -->
+  <div class="budget-content">
+    @if (loading()) {
+      <!-- Skeleton loading -->
+      <div class="skeleton-list">
+        @for (i of [1,2,3]; track i) {
+          <div class="skeleton-item card">
+            <div class="skeleton-row">
+              <div class="skeleton-dot"></div>
+              <div class="skeleton-text skeleton-text--lg"></div>
+            </div>
+            <div class="skeleton-bar"></div>
+            <div class="skeleton-row skeleton-row--right">
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text skeleton-text--sm"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (budgets().length === 0) {
+      <!-- Empty state -->
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <mat-icon>savings</mat-icon>
+        </div>
+        <p class="empty-state__title">Nenhum orçamento definido para este mês.</p>
+        <p class="empty-state__sub">Clique em + para adicionar um limite por categoria.</p>
+      </div>
+    } @else {
+      <!-- Lista de orçamentos -->
+      <div class="budget-list">
+        @for (budget of budgets(); track budget.id) {
+          <div class="budget-item card">
+            <!-- Cabeçalho do item -->
+            <div class="budget-item__header">
+              <div class="budget-item__cat">
+                <span
+                  class="budget-item__dot"
+                  [style.background]="budget.categoryColor"
+                ></span>
+                <span class="budget-item__name">{{ budget.categoryName }}</span>
+              </div>
+              <div class="budget-item__actions">
+                <button
+                  mat-icon-button
+                  (click)="openEditForm(budget)"
+                  matTooltip="Editar limite"
+                  class="action-btn"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  mat-icon-button
+                  (click)="confirmDelete(budget)"
+                  matTooltip="Excluir orçamento"
+                  class="action-btn action-btn--danger"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Barra de progresso -->
+            <div class="budget-item__bar-wrap">
+              <mat-progress-bar
+                mode="determinate"
+                [value]="progressValue(budget.percentage)"
+                class="budget-progress"
+                [class.progress--ok]="budget.status === 'OK'"
+                [class.progress--warning]="budget.status === 'WARNING'"
+                [class.progress--exceeded]="budget.status === 'EXCEEDED'"
+              ></mat-progress-bar>
+            </div>
+
+            <!-- Valores -->
+            <div class="budget-item__values">
+              <div class="budget-item__spent">
+                <span class="budget-item__spent-label">Gasto</span>
+                <span class="budget-item__spent-value amount amount--negative">
+                  {{ formatCurrency(budget.spentAmount) }}
+                </span>
+                <span class="budget-item__sep">/</span>
+                <span class="budget-item__limit amount">
+                  {{ formatCurrency(budget.limitAmount) }}
+                </span>
+              </div>
+              <span class="budget-item__pct" [class]="statusClass(budget.status)">
+                {{ budget.percentage | number:'1.0-0' }}%
+              </span>
+            </div>
+
+            <!-- Saldo restante / excedido -->
+            <div class="budget-item__remaining" [class]="statusClass(budget.status)">
+              @if (budget.status === 'EXCEEDED') {
+                <mat-icon class="remaining-icon">warning</mat-icon>
+                Excedido em {{ formatCurrency(-budget.remainingAmount) }}
+              } @else {
+                <mat-icon class="remaining-icon">check_circle</mat-icon>
+                Restam {{ formatCurrency(budget.remainingAmount) }}
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- FAB Novo Orçamento -->
+  <button
+    mat-fab
+    class="fab-new"
+    (click)="openNewForm()"
+    matTooltip="Novo orçamento"
+    aria-label="Adicionar novo orçamento"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

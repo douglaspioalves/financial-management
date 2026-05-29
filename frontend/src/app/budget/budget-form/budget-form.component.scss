@@ -1,0 +1,85 @@
+.form-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  padding: 20px 24px 0;
+
+  &__icon {
+    color: var(--color-primary);
+  }
+}
+
+.form-content {
+  padding: 16px 24px;
+  min-width: 320px;
+  max-width: 480px;
+}
+
+.form-month {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px;
+  text-transform: capitalize;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: var(--color-primary);
+  }
+}
+
+.form-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.form-field {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.cat-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+}
+
+.form-actions {
+  padding: 8px 24px 20px;
+  gap: 8px;
+}
+
+.btn-save {
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  min-width: 140px;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.btn-spinner {
+  display: inline-flex;
+  margin-right: 8px;
+}
