@@ -1,0 +1,34 @@
+-- =============================================================================
+-- V8__sprint05_dashboard_indexes.sql
+-- Gestor de Gastos — Índice adicional para Dashboard (Sprint 05)
+--
+-- Auditoria pré-Sprint 05 (2026-05-29) — Agente DBA:
+--
+-- Índices EXISTENTES (não precisam ser criados):
+--   [OK] idx_transaction_date          — transaction(date)          — V2
+--   [OK] idx_transaction_category_id   — transaction(category_id)   — V2
+--   [OK] idx_transaction_paid_by_person_id — transaction(paid_by_person_id) — V2
+--   [OK] idx_transaction_card_id       — transaction(card_id)       — V6
+--   [OK] idx_installment_reference_month — installment(reference_month) — V2
+--   [OK] idx_installment_transaction_id — installment(transaction_id) — V2
+--   [OK] idx_budget_month              — budget(month)               — V2
+--   [OK] idx_recurring_rule_next_date_active — recurring_rule(next_date) WHERE active — V2
+--
+-- Constraints EXISTENTES (não precisam ser criadas):
+--   [OK] chk_budget_month_day — CHECK (EXTRACT(DAY FROM month) = 1) — V2, linha 165
+--   [OK] chk_installment_reference_month_day — CHECK (EXTRACT(DAY FROM reference_month) = 1) — V2
+--
+-- AUSENTE — criado nesta migration:
+--   [+] idx_transaction_type — transaction(type)
+--       Motivação: queries de dashboard filtram por type='EXPENSE' (total de despesas)
+--       e type='INCOME' (total de receitas do mês para cálculo de saldo e proporção).
+--       Embora type tenha baixa cardinalidade (2 valores), o PostgreSQL usa
+--       bitmap index scan combinando idx_transaction_type com idx_transaction_date,
+--       tornando as agregações mensais por tipo mais eficientes.
+--
+-- Banco: PostgreSQL 16
+-- Sprint: 05 — Dashboard + Orçamento
+-- Data: 2026-05-29
+-- =============================================================================
+
+CREATE INDEX idx_transaction_type ON transaction (type);
