@@ -1,0 +1,83 @@
+<h2 mat-dialog-title class="form-title">
+  <mat-icon class="form-title__icon">{{ isEditing ? 'edit' : 'add_circle' }}</mat-icon>
+  {{ isEditing ? 'Editar Orçamento' : 'Novo Orçamento' }}
+</h2>
+
+<mat-dialog-content class="form-content">
+  <p class="form-month">
+    <mat-icon>calendar_month</mat-icon>
+    {{ monthLabel }}
+  </p>
+
+  @if (loadingCategories()) {
+    <div class="form-loading">
+      <mat-spinner diameter="32"></mat-spinner>
+      <span>Carregando categorias...</span>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" id="budget-form">
+      <!-- Categoria -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Categoria</mat-label>
+        <mat-select formControlName="categoryId">
+          @for (cat of categories(); track cat.id) {
+            <mat-option [value]="cat.id">
+              <span class="cat-option">
+                <span class="cat-option__dot" [style.background]="cat.color"></span>
+                {{ cat.name }}
+              </span>
+            </mat-option>
+          }
+          @if (categories().length === 0) {
+            <mat-option disabled>Nenhuma categoria disponível</mat-option>
+          }
+        </mat-select>
+        @if (form.get('categoryId')?.hasError('required') && form.get('categoryId')?.touched) {
+          <mat-error>Selecione uma categoria.</mat-error>
+        }
+        @if (isEditing) {
+          <mat-hint>A categoria não pode ser alterada na edição.</mat-hint>
+        }
+      </mat-form-field>
+
+      <!-- Limite -->
+      <mat-form-field appearance="outline" class="form-field">
+        <mat-label>Limite (R$)</mat-label>
+        <input
+          matInput
+          type="number"
+          step="0.01"
+          min="0.01"
+          formControlName="limitAmount"
+          placeholder="0,00"
+        />
+        <mat-icon matPrefix>attach_money</mat-icon>
+        @if (form.get('limitAmount')?.hasError('required') && form.get('limitAmount')?.touched) {
+          <mat-error>Informe um valor.</mat-error>
+        }
+        @if (form.get('limitAmount')?.hasError('min') && form.get('limitAmount')?.touched) {
+          <mat-error>Informe um valor maior que zero.</mat-error>
+        }
+      </mat-form-field>
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="form-actions">
+  <button mat-button type="button" (click)="cancel()" [disabled]="saving()">
+    Cancelar
+  </button>
+  <button
+    mat-flat-button
+    type="submit"
+    form="budget-form"
+    (click)="submit()"
+    [disabled]="saving() || loadingCategories()"
+    class="btn-save"
+  >
+    @if (saving()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+    }
+    {{ isEditing ? 'Salvar alterações' : 'Criar orçamento' }}
+  </button>
+</mat-dialog-actions>
