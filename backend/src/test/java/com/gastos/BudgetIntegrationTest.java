@@ -68,7 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   - Cada categoria so pode ter um orcamento por mes (unicidade). Segundo POST -> 409.
  *   - spentAmount = soma das despesas (incluindo parcelas) da categoria no mes.
  *   - percentage = (spentAmount / limitAmount) * 100.
- *   - status: OK se percentage <= 75, WARNING se > 75 e <= 100, EXCEEDED se > 100.
+ *   - status: OK se percentage <= 70, WARNING se > 70 e <= 100, EXCEEDED se > 100.
  *   - PUT com version diferente da atual -> 409 (optimistic locking).
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
