@@ -1,5 +1,6 @@
 package com.gastos.controller;
 
+import com.gastos.dto.installment.InstallmentResponse;
 import com.gastos.dto.transaction.CreateTransactionRequest;
 import com.gastos.dto.transaction.TransactionResponse;
 import com.gastos.dto.transaction.UpdateTransactionRequest;
@@ -29,7 +30,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     /**
-     * POST /api/transactions — Cria um lançamento financeiro.
+     * POST /api/transactions — Cria um lançamento financeiro (à vista ou parcelado).
      */
     @PostMapping
     public ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest request) {
@@ -57,7 +58,16 @@ public class TransactionController {
     }
 
     /**
-     * PUT /api/transactions/{id} — Edita um lançamento existente.
+     * GET /api/transactions/{id}/installments — Lista as parcelas de um lançamento.
+     * Retorna lista vazia para lançamentos à vista (installmentsTotal = 1).
+     */
+    @GetMapping("/{id}/installments")
+    public ResponseEntity<List<InstallmentResponse>> findInstallments(@PathVariable UUID id) {
+        return ResponseEntity.ok(transactionService.findInstallments(id));
+    }
+
+    /**
+     * PUT /api/transactions/{id} — Edita um lançamento existente (somente à vista).
      */
     @PutMapping("/{id}")
     public ResponseEntity<TransactionResponse> update(
@@ -68,7 +78,8 @@ public class TransactionController {
     }
 
     /**
-     * DELETE /api/transactions/{id} — Remove permanentemente um lançamento à vista.
+     * DELETE /api/transactions/{id} — Remove permanentemente um lançamento.
+     * Para lançamentos parcelados, remove também todas as parcelas (ON DELETE CASCADE).
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
