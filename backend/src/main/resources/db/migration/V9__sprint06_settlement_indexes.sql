@@ -1,0 +1,76 @@
+-- =============================================================================
+-- V9__sprint06_settlement_indexes.sql
+-- Gestor de Gastos — Índices adicionais para SettlementService (Sprint 06)
+--
+-- Auditoria pré-Sprint 06 (2026-05-29) — Agente DBA
+--
+-- =========================================================================
+-- 1. AUDITORIA recurring_rule — TODOS OS ITENS PRESENTES EM V2
+-- =========================================================================
+--
+-- Colunas [OK]:
+--   id, type, amount, description, category_id, paid_by_person_id,
+--   payment_method, split_rule, frequency, next_date, active,
+--   created_at, version
+--
+-- Índice [OK]:
+--   idx_recurring_rule_next_date_active ON recurring_rule(next_date)
+--   WHERE active = true  — criado em V2
+--
+-- FKs [OK]:
+--   fk_recurring_rule_category       → category(id)  — criado em V2
+--   fk_recurring_rule_paid_by_person → person(id)    — criado em V2
+--
+-- Constraints CHECK [OK]:
+--   chk_recurring_rule_type           IN ('EXPENSE','INCOME')
+--   chk_recurring_rule_amount         > 0
+--   chk_recurring_rule_payment_method IN ('CASH','DEBIT','CREDIT','PIX','TRANSFER')
+--   chk_recurring_rule_split_rule     IN ('PERSON_A','PERSON_B','FIFTY_FIFTY','PROPORTIONAL')
+--   chk_recurring_rule_frequency      IN ('MONTHLY','WEEKLY','YEARLY')
+--
+-- =========================================================================
+-- 2. ANÁLISE DE SUFICIÊNCIA DOS ÍNDICES PARA SettlementService
+-- =========================================================================
+--
+-- Query principal de receitas para cálculo de proporção:
+--
+--   SELECT * FROM transaction
+--   WHERE type       = 'INCOME'
+--     AND split_rule IN ('PERSON_A', 'PERSON_B')
+--     AND date BETWEEN :start AND :end
+--
+-- Índices existentes:
+--   [V2]  idx_transaction_date  — transaction(date)
+--   [V8]  idx_transaction_type  — transaction(type)
+--
+-- Análise:
+--   Com os dois índices separados, o PostgreSQL executa dois bitmap index scans
+--   e depois realiza um Bitmap AND antes de acessar as linhas. Isso tem overhead
+--   de memória e CPU para construir os bitmaps.
+--
+--   Um índice composto (type, date) elimina o Bitmap AND: o planejador acessa
+--   diretamente os registros type='INCOME' no intervalo de data solicitado,
+--   reduzindo tanto I/O quanto uso de memória de trabalho.
+--
+--   O filtro split_rule IN ('PERSON_A','PERSON_B') tem seletividade razoável
+--   (aprox. 50% das linhas tipo INCOME), mas é aplicado como filter sobre o
+--   resultado do índice composto — não justifica coluna adicional no índice
+--   dado o volume esperado de receitas por mês (tipicamente poucos registros
+--   por pessoa).
+--
+-- AUSENTE — criado nesta migration:
+--   [+] idx_transaction_type_date — transaction(type, date)
+--       Motivação: SettlementService e DashboardService fazem queries combinando
+--       type + date com frequência. O índice composto substitui o uso combinado
+--       de idx_transaction_type + idx_transaction_date nessas queries, evitando
+--       Bitmap AND e melhorando performance de agregações mensais por tipo.
+--
+--   NOTA: idx_transaction_type (V8) e idx_transaction_date (V2) são mantidos pois
+--   ainda são úteis para queries que filtram apenas um dos campos isoladamente.
+--
+-- Banco: PostgreSQL 16
+-- Sprint: 06 — Recorrência + Acerto de Contas
+-- Data: 2026-05-29
+-- =============================================================================
+
+CREATE INDEX idx_transaction_type_date ON transaction (type, date);
