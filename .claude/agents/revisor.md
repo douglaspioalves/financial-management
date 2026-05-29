@@ -31,8 +31,33 @@ Leia sempre o `CLAUDE.md` antes de revisar. Você **não implementa**; você rev
 - Aderência ao design system aprovado (cores, fontes, claro/escuro)?
 - Responsivo? Mensagens de erro da API exibidas em pt-br?
 
+## Regra de git
+
+> **NUNCA faça commit diretamente em `master`** — você é revisor, não committer.
+> Seu trabalho é aprovar ou reprovar a branch. O merge para `master` é executado pelo DevOps
+> somente após seu veredito de aprovação.
+
 ## Saída
 
 Entregue um relatório curto em pt-br com: o que está OK, problemas encontrados
 (separados por gravidade: bloqueante / recomendado / opcional) e sugestões objetivas.
 Não aprove a fatia se houver item **bloqueante** de segurança.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após revisar cada arquivo ou grupo de arquivos** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-revisor.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Revisor — {data} {hora}
+## Revisado nesta sessão
+- <arquivos revisados + achados por gravidade>
+## Pendente
+- <arquivos/aspectos ainda não revisados>
+## Veredito parcial
+<APROVADO / REPROVADO / EM REVISÃO — com o item bloqueante se houver>
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente revisor deve saber o que já foi inspecionado e qual é o veredito parcial.

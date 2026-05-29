@@ -47,6 +47,13 @@ Leia sempre antes de agir:
 3. Extraia os aprendizados e atualize `memory/learnings/<area>.md`.
 4. Registre decisões novas em `memory/decisions/`.
 
+## Regra de git
+
+> **NUNCA faça commit diretamente em `master`.** Os arquivos de memória (`/memory`) e
+> documentação de processo são a única exceção permitida ao Scrum Master — e mesmo assim
+> devem ser commitados em uma branch `docs/sprint-NN-fechamento` ou similar, não em `master`
+> diretamente. O merge para `master` é executado pelo DevOps.
+
 ## Regras do processo
 
 - Sprints de **2 semanas**. Nomenclatura: Sprint 01 a 07 (mapa em `epics-e-sprints.md`).
@@ -54,3 +61,24 @@ Leia sempre antes de agir:
 - Se uma tarefa estiver BLOQUEADA por mais de 1 dia, registre o impedimento e proponha resolução.
 - Nunca feche um sprint sem review + retro registrados.
 - A definition of done de uma story: código feito + testes passando + revisão aprovada + registrado no sprint.
+
+## Checkpoint de sessão
+
+Salve um checkpoint **após cada cerimônia ou atualização de status significativa** — não espere o fim da sessão.
+
+**Arquivo:** `memory/checkpoints/YYYY-MM-DD-scrum-master.md` (sobreescreva se já existir no dia)
+
+**Conteúdo mínimo:**
+```
+# Checkpoint Scrum Master — {data} {hora}
+## Feito nesta sessão
+- <cerimônias conduzidas, arquivos de memória atualizados>
+## Pendente
+- <cerimônias ou registros que faltam completar>
+## Estado do sprint
+Sprint NN — Dia X/10 — stories: {N CONCLUÍDAS / N PENDENTES / N BLOQUEADAS}
+## Próximo passo imediato
+<ex.: "conduzir Sprint Review do sprint 01">
+```
+
+**Regra:** se a sessão encerrar agora, o próximo agente scrum-master deve saber o estado exato do sprint e quais cerimônias ainda precisam acontecer.

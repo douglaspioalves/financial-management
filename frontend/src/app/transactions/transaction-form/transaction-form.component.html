@@ -1,0 +1,201 @@
+<div class="tf-dialog">
+
+  <!-- Cabecalho -->
+  <div class="tf-header">
+    <div class="tf-header__type-toggle">
+      <button class="type-btn"
+              [class.type-btn--active-expense]="form.value.type === 'EXPENSE'"
+              (click)="setType('EXPENSE')">
+        Despesa
+      </button>
+      <button class="type-btn"
+              [class.type-btn--active-income]="form.value.type === 'INCOME'"
+              (click)="setType('INCOME')">
+        Receita
+      </button>
+    </div>
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <h2 mat-dialog-title class="tf-title">
+    {{ data.transaction ? 'Editar lancamento' : 'Novo lancamento' }}
+  </h2>
+
+  <!-- Formulario -->
+  <mat-dialog-content>
+    <form [formGroup]="form" class="tf-form" (ngSubmit)="submit()">
+
+      @if (apiError()) {
+        <div class="api-error" role="alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ apiError() }}</span>
+        </div>
+      }
+
+      <mat-form-field appearance="outline" class="tf-field tf-field--full">
+        <mat-label>Valor (R$)</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput
+               type="number"
+               step="0.01"
+               min="0.01"
+               formControlName="amount"
+               placeholder="0,00"
+               inputmode="decimal" />
+        @if (form.get('amount')?.hasError('required') && form.get('amount')?.touched) {
+          <mat-error>Informe o valor do lancamento.</mat-error>
+        }
+        @if (form.get('amount')?.hasError('min') && form.get('amount')?.touched) {
+          <mat-error>O valor deve ser maior que zero.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="tf-field tf-field--full">
+        <mat-label>Data</mat-label>
+        <input matInput type="date" formControlName="date" />
+        @if (form.get('date')?.hasError('required') && form.get('date')?.touched) {
+          <mat-error>Informe a data do lancamento.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="tf-field tf-field--full">
+        <mat-label>Descricao (opcional)</mat-label>
+        <input matInput formControlName="description" placeholder="Ex.: Supermercado, Conta de luz..." />
+        @if (form.get('description')?.hasError('maxlength')) {
+          <mat-error>Maximo de 255 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="tf-field tf-field--full">
+        <mat-label>Categoria</mat-label>
+        <mat-select formControlName="categoryId">
+          @if (loadingCategories()) {
+            <mat-option disabled>Carregando categorias...</mat-option>
+          } @else {
+            @for (cat of categories(); track cat.id) {
+              <mat-option [value]="cat.id">
+                <span class="cat-option">
+                  <span class="cat-dot" [style.background-color]="cat.color"></span>
+                  {{ cat.name }}
+                </span>
+              </mat-option>
+            }
+          }
+        </mat-select>
+        @if (form.get('categoryId')?.hasError('required') && form.get('categoryId')?.touched) {
+          <mat-error>Selecione uma categoria.</mat-error>
+        }
+        @if (fieldErrors()['categoryId']) {
+          <mat-error>{{ fieldErrors()['categoryId'] }}</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="tf-field tf-field--full">
+        <mat-label>Quem pagou</mat-label>
+        <mat-select formControlName="paidByPersonId">
+          @if (loadingPersons()) {
+            <mat-option disabled>Carregando pessoas...</mat-option>
+          } @else {
+            @for (person of persons(); track person.id) {
+              <mat-option [value]="person.id">
+                <span class="person-option">
+                  <span class="person-avatar" [style.background-color]="person.color">
+                    {{ person.name.charAt(0).toUpperCase() }}
+                  </span>
+                  {{ person.name }}
+                </span>
+              </mat-option>
+            }
+          }
+        </mat-select>
+        @if (form.get('paidByPersonId')?.hasError('required') && form.get('paidByPersonId')?.touched) {
+          <mat-error>Informe quem efetuou o pagamento.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="tf-row">
+        <mat-form-field appearance="outline" class="tf-field">
+          <mat-label>Forma de pagamento</mat-label>
+          <mat-select formControlName="paymentMethod">
+            <mat-option value="CASH">Dinheiro</mat-option>
+            <mat-option value="DEBIT">Débito</mat-option>
+            <mat-option value="CREDIT">Crédito</mat-option>
+            <mat-option value="PIX">Pix</mat-option>
+            <mat-option value="TRANSFER">Transferência</mat-option>
+          </mat-select>
+          @if (form.get('paymentMethod')?.hasError('required') && form.get('paymentMethod')?.touched) {
+            <mat-error>Selecione a forma de pagamento.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="tf-field">
+          <mat-label>Divisão</mat-label>
+          <mat-select formControlName="splitRule">
+            <mat-option value="FIFTY_FIFTY">50 / 50</mat-option>
+            <mat-option value="PERSON_A">Somente A</mat-option>
+            <mat-option value="PERSON_B">Somente B</mat-option>
+            <mat-option value="PROPORTIONAL">Proporcional</mat-option>
+          </mat-select>
+          <mat-hint>Como o valor entra no acerto de contas.</mat-hint>
+          @if (form.get('splitRule')?.hasError('required') && form.get('splitRule')?.touched) {
+            <mat-error>Selecione a regra de divisão.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <!-- Campo cartão — visível apenas quando método = crédito -->
+      @if (isCreditPayment) {
+        <mat-form-field appearance="outline" class="tf-field tf-field--full">
+          <mat-label>Cartão de crédito</mat-label>
+          <mat-icon matPrefix>credit_card</mat-icon>
+          <mat-select formControlName="cardId">
+            @if (loadingCards()) {
+              <mat-option disabled>Carregando cartões...</mat-option>
+            } @else if (cards().length === 0) {
+              <mat-option disabled>Nenhum cartão cadastrado. Acesse Cartões para adicionar.</mat-option>
+            } @else {
+              @for (card of cards(); track card.id) {
+                <mat-option [value]="card.id">
+                  <span class="card-option">
+                    <mat-icon class="card-option__icon">credit_card</mat-icon>
+                    <span>{{ card.name }}</span>
+                    <span class="card-option__owner">— {{ card.ownerPersonName }}</span>
+                  </span>
+                </mat-option>
+              }
+            }
+          </mat-select>
+          @if (form.get('cardId')?.hasError('required') && form.get('cardId')?.touched) {
+            <mat-error>Selecione o cartão para pagamento no crédito.</mat-error>
+          }
+          @if (fieldErrors()['cardId']) {
+            <mat-error>{{ fieldErrors()['cardId'] }}</mat-error>
+          }
+        </mat-form-field>
+      }
+
+    </form>
+  </mat-dialog-content>
+
+  <!-- Acoes -->
+  <mat-dialog-actions align="end" class="tf-actions">
+    <button mat-stroked-button mat-dialog-close class="btn-cancel" type="button">
+      Cancelar
+    </button>
+    <button mat-flat-button
+            color="primary"
+            class="btn-save"
+            type="button"
+            [disabled]="loading()"
+            (click)="submit()">
+      @if (loading()) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        {{ data.transaction ? 'Salvar alteracoes' : 'Criar lancamento' }}
+      }
+    </button>
+  </mat-dialog-actions>
+
+</div>

@@ -1,26 +1,17 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HealthService } from './core/services/health.service';
+import { MatIconButton } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { ThemeService } from './core/theme/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, MatIconButton, MatIconModule, MatTooltipModule],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
-export class App implements OnInit {
-  protected readonly title = signal('Gestor de Gastos');
-  protected readonly backendStatus = signal<'loading' | 'ok' | 'error'>('loading');
-
-  constructor(private healthService: HealthService) {}
-
-  ngOnInit(): void {
-    this.healthService.check().subscribe(response => {
-      if (response && response.status === 'ok') {
-        this.backendStatus.set('ok');
-      } else {
-        this.backendStatus.set('error');
-      }
-    });
-  }
+export class App {
+  protected theme = inject(ThemeService);
 }
