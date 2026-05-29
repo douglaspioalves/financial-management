@@ -38,3 +38,6 @@ desktop.ini
 # ─── Logs ─────────────────────────────────────────────────────────────────
 *.log
 logs/
+
+# ─── Claude Code (agentes em background) ──────────────────────────────────
+.claude/worktrees/
