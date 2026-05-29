@@ -1,0 +1,439 @@
+.budget-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  padding-bottom: 88px; // espaço para o FAB
+}
+
+// ─── Header ────────────────────────────────────────────────────────────────────
+.budget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.brand__sub {
+  font-size: 0.7rem;
+  color: var(--color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+// ─── Navegação de mês ──────────────────────────────────────────────────────────
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px 16px 8px;
+}
+
+.month-nav__label {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  min-width: 200px;
+  text-align: center;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+// ─── Card de resumo ────────────────────────────────────────────────────────────
+.summary-card {
+  margin: 8px 16px 0;
+  padding: 16px 20px 14px;
+}
+
+.summary-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.summary-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summary-card__info--right {
+  text-align: right;
+}
+
+.summary-card__label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summary-card__value {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.summary-card__bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.summary-progress {
+  flex: 1;
+  border-radius: 6px;
+  height: 8px;
+}
+
+.summary-card__pct {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 36px;
+  text-align: right;
+}
+
+// ─── Conteúdo ──────────────────────────────────────────────────────────────────
+.budget-content {
+  padding: 16px;
+}
+
+// ─── Skeleton ──────────────────────────────────────────────────────────────────
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-item {
+  padding: 18px 16px;
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  &--right {
+    justify-content: space-between;
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+}
+
+.skeleton-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-border);
+  flex-shrink: 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-text {
+  height: 14px;
+  border-radius: 4px;
+  background: var(--color-border);
+  animation: pulse 1.5s ease-in-out infinite;
+  width: 120px;
+
+  &--lg { width: 160px; }
+  &--sm { width: 60px; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+// ─── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 8px;
+}
+
+.empty-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: var(--color-primary);
+  }
+}
+
+.empty-state__title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.empty-state__sub {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+// ─── Lista de itens ────────────────────────────────────────────────────────────
+.budget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.budget-item {
+  padding: 16px;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+}
+
+.budget-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.budget-item__cat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.budget-item__dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.budget-item__name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+.budget-item__actions {
+  display: flex;
+  gap: 2px;
+}
+
+.action-btn {
+  color: var(--color-text-secondary);
+
+  &--danger {
+    color: var(--color-expense);
+  }
+}
+
+// ─── Barra de progresso ────────────────────────────────────────────────────────
+.budget-item__bar-wrap {
+  margin-bottom: 10px;
+}
+
+.budget-progress {
+  border-radius: 6px;
+  height: 8px;
+}
+
+// Cor da barra via CSS + Angular Material override
+::ng-deep {
+  .budget-progress.progress--ok .mdc-linear-progress__bar-inner {
+    border-color: #7fc4a0 !important;
+  }
+
+  .budget-progress.progress--warning .mdc-linear-progress__bar-inner {
+    border-color: #f0c080 !important;
+  }
+
+  .budget-progress.progress--exceeded .mdc-linear-progress__bar-inner {
+    border-color: #e8927c !important;
+  }
+
+  .summary-progress.progress--warning .mdc-linear-progress__bar-inner {
+    border-color: #f0c080 !important;
+  }
+
+  .summary-progress.progress--exceeded .mdc-linear-progress__bar-inner {
+    border-color: #e8927c !important;
+  }
+}
+
+// ─── Valores ───────────────────────────────────────────────────────────────────
+.budget-item__values {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.budget-item__spent {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.budget-item__spent-label {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: 2px;
+}
+
+.budget-item__spent-value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.budget-item__sep {
+  color: var(--color-text-disabled);
+  margin: 0 2px;
+}
+
+.budget-item__limit {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.budget-item__pct {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  &.status--ok      { color: #7fc4a0; }
+  &.status--warning { color: #d4a237; }
+  &.status--exceeded { color: #e8927c; }
+}
+
+// ─── Saldo restante / excedido ─────────────────────────────────────────────────
+.budget-item__remaining {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border);
+
+  &.status--ok      { color: #5aaa84; }
+  &.status--warning { color: #c49630; }
+  &.status--exceeded { color: #e8927c; }
+}
+
+.remaining-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+// ─── FAB ───────────────────────────────────────────────────────────────────────
+.fab-new {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 100;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+// ─── Responsive ────────────────────────────────────────────────────────────────
+@media (min-width: 640px) {
+  .budget-content {
+    padding: 20px 24px;
+  }
+
+  .summary-card {
+    margin: 12px 24px 0;
+  }
+
+  .month-nav {
+    padding: 24px 24px 8px;
+  }
+
+  .budget-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .budget-list {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
