@@ -15,6 +15,20 @@ export interface PersonSummary {
   color: string;
 }
 
+export interface CardSummary {
+  id: string;
+  name: string;
+  closingDay: number;
+  dueDay: number;
+}
+
+export interface InstallmentResponse {
+  id: string;
+  number: number;
+  amount: number;
+  referenceMonth: string; // "yyyy-MM-dd" — sempre dia 1 do mês de referência
+}
+
 export interface Transaction {
   id: string;
   type: TransactionType;
@@ -24,7 +38,7 @@ export interface Transaction {
   category: CategorySummary;
   paidByPerson: PersonSummary;
   paymentMethod: PaymentMethod;
-  cardId?: string;
+  card?: CardSummary | null;
   splitRule: SplitRule;
   installmentsTotal: number;
   createdAt: string;
