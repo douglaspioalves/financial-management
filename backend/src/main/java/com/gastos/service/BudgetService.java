@@ -172,6 +172,8 @@ public class BudgetService {
             status = "OK";
         }
 
+        BigDecimal remaining = limit.subtract(spent).setScale(2, RoundingMode.HALF_UP);
+
         return new BudgetResponse(
                 budget.getId(),
                 budget.getCategory().getId(),
@@ -180,6 +182,7 @@ public class BudgetService {
                 budget.getMonth(),
                 limit,
                 spent,
+                remaining,
                 percentage,
                 status,
                 budget.getVersion()

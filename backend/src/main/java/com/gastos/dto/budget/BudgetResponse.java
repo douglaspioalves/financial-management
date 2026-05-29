@@ -12,6 +12,7 @@ public record BudgetResponse(
         LocalDate month,
         BigDecimal limitAmount,
         BigDecimal spentAmount,
+        BigDecimal remainingAmount,
         BigDecimal percentage,
         String status,
         Long version
