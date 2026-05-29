@@ -400,11 +400,16 @@
   }
 }
 
-// Suporte ao modo escuro via classe no body (ThemeService)
-:host-context(body.dark) {
+// Suporte ao modo escuro via classe no body (ThemeService usa dark-theme)
+:host-context(body.dark-theme) {
   .chip--installment {
     color: #c9bce3;
     background: color-mix(in srgb, #b8a9d9 20%, transparent);
+    border-color: color-mix(in srgb, #b8a9d9 40%, transparent);
+  }
+
+  .installment-row--current td {
+    background: color-mix(in srgb, #7fc4a0 15%, transparent);
   }
 }
 
