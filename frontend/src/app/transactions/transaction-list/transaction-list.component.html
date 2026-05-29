@@ -65,54 +65,163 @@
     } @else {
       <div class="tx-list">
         @for (tx of transactions(); track tx.id) {
-          <div class="tx-item"
-               [class.tx-item--income]="tx.type === 'INCOME'"
-               [class.tx-item--expense]="tx.type === 'EXPENSE'">
 
-            <div class="tx-icon"
-                 [style.background-color]="tx.category.color + '33'"
-                 [style.color]="tx.category.color">
-              <mat-icon>{{ categoryIcon(tx.category.name) }}</mat-icon>
-            </div>
+          <!-- Lancamento parcelado: usa expansion panel -->
+          @if (tx.installmentsTotal > 1) {
+            <mat-accordion class="tx-accordion">
+              <mat-expansion-panel
+                class="tx-panel"
+                [class.tx-panel--income]="tx.type === 'INCOME'"
+                [class.tx-panel--expense]="tx.type === 'EXPENSE'"
+                hideToggle
+                (opened)="onInstallmentPanelOpened(tx)">
 
-            <div class="tx-info">
-              <span class="tx-info__title">{{ tx.description || tx.category.name }}</span>
-              <span class="tx-info__sub">
-                {{ tx.date | date:'dd/MM/yyyy' }} &middot; {{ paymentMethodLabel(tx.paymentMethod) }}
-              </span>
-              <div class="tx-info__tags">
-                <span class="chip chip--category"
-                      [style.background-color]="tx.category.color + '22'"
-                      [style.color]="tx.category.color">
-                  {{ tx.category.name }}
+                <mat-expansion-panel-header class="tx-panel-header">
+                  <div class="tx-item tx-item--no-border">
+
+                    <div class="tx-icon"
+                         [style.background-color]="tx.category.color + '33'"
+                         [style.color]="tx.category.color">
+                      <mat-icon>{{ categoryIcon(tx.category.name) }}</mat-icon>
+                    </div>
+
+                    <div class="tx-info">
+                      <div class="tx-info__title-row">
+                        <span class="tx-info__title">{{ tx.description || tx.category.name }}</span>
+                        <!-- Badge "parcela atual/total" em lilas -->
+                        <span class="chip chip--installment"
+                              [matTooltip]="'Parcela ' + currentInstallmentNumber(tx) + ' de ' + tx.installmentsTotal">
+                          {{ currentInstallmentNumber(tx) }}/{{ tx.installmentsTotal }}
+                        </span>
+                      </div>
+                      <span class="tx-info__sub">
+                        {{ tx.date | date:'dd/MM/yyyy' }} &middot; {{ paymentMethodLabel(tx.paymentMethod) }}
+                        @if (tx.card) {
+                          &middot; {{ tx.card.name }}
+                        }
+                      </span>
+                      <div class="tx-info__tags">
+                        <span class="chip chip--category"
+                              [style.background-color]="tx.category.color + '22'"
+                              [style.color]="tx.category.color">
+                          {{ tx.category.name }}
+                        </span>
+                        <span class="chip chip--split">{{ splitRuleLabel(tx.splitRule) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="tx-right">
+                      <span class="tx-amount amount"
+                            [class.amount--positive]="tx.type === 'INCOME'"
+                            [class.amount--negative]="tx.type === 'EXPENSE'">
+                        {{ tx.type === 'INCOME' ? '+' : '−' }}&nbsp;{{ tx.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                      </span>
+                      <div class="tx-person"
+                           [style.background-color]="tx.paidByPerson.color"
+                           [matTooltip]="'Pago por ' + tx.paidByPerson.name">
+                        {{ tx.paidByPerson.name.charAt(0).toUpperCase() }}
+                      </div>
+                    </div>
+
+                    <div class="tx-actions" (click)="$event.stopPropagation()">
+                      <button mat-icon-button class="action-btn" (click)="openEditForm(tx)" matTooltip="Editar">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button class="action-btn action-btn--delete" (click)="confirmDelete(tx)" matTooltip="Excluir">
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </div>
+
+                  </div>
+                </mat-expansion-panel-header>
+
+                <!-- Conteudo expandido: lista de parcelas -->
+                <div class="installments-panel">
+                  @if (installmentsLoading()[tx.id]) {
+                    <div class="installments-loading">
+                      <mat-spinner diameter="24"></mat-spinner>
+                      <span>Carregando parcelas...</span>
+                    </div>
+                  } @else if (installmentsMap()[tx.id]) {
+                    <table class="installments-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Mes de referencia</th>
+                          <th class="col-value">Valor</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (inst of installmentsMap()[tx.id]; track inst.id) {
+                          <tr [class.installment-row--current]="isCurrentMonthInstallment(inst)">
+                            <td class="col-num">{{ inst.number }}</td>
+                            <td>{{ formatReferenceMonth(inst.referenceMonth) }}</td>
+                            <td class="col-value">
+                              {{ inst.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  } @else {
+                    <p class="installments-empty">Nenhuma parcela encontrada.</p>
+                  }
+                </div>
+
+              </mat-expansion-panel>
+            </mat-accordion>
+          } @else {
+            <!-- Lancamento a vista: comportamento original -->
+            <div class="tx-item"
+                 [class.tx-item--income]="tx.type === 'INCOME'"
+                 [class.tx-item--expense]="tx.type === 'EXPENSE'">
+
+              <div class="tx-icon"
+                   [style.background-color]="tx.category.color + '33'"
+                   [style.color]="tx.category.color">
+                <mat-icon>{{ categoryIcon(tx.category.name) }}</mat-icon>
+              </div>
+
+              <div class="tx-info">
+                <span class="tx-info__title">{{ tx.description || tx.category.name }}</span>
+                <span class="tx-info__sub">
+                  {{ tx.date | date:'dd/MM/yyyy' }} &middot; {{ paymentMethodLabel(tx.paymentMethod) }}
                 </span>
-                <span class="chip chip--split">{{ splitRuleLabel(tx.splitRule) }}</span>
+                <div class="tx-info__tags">
+                  <span class="chip chip--category"
+                        [style.background-color]="tx.category.color + '22'"
+                        [style.color]="tx.category.color">
+                    {{ tx.category.name }}
+                  </span>
+                  <span class="chip chip--split">{{ splitRuleLabel(tx.splitRule) }}</span>
+                </div>
               </div>
-            </div>
 
-            <div class="tx-right">
-              <span class="tx-amount amount"
-                    [class.amount--positive]="tx.type === 'INCOME'"
-                    [class.amount--negative]="tx.type === 'EXPENSE'">
-                {{ tx.type === 'INCOME' ? '+' : '−' }}&nbsp;{{ tx.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-              </span>
-              <div class="tx-person"
-                   [style.background-color]="tx.paidByPerson.color"
-                   [matTooltip]="'Pago por ' + tx.paidByPerson.name">
-                {{ tx.paidByPerson.name.charAt(0).toUpperCase() }}
+              <div class="tx-right">
+                <span class="tx-amount amount"
+                      [class.amount--positive]="tx.type === 'INCOME'"
+                      [class.amount--negative]="tx.type === 'EXPENSE'">
+                  {{ tx.type === 'INCOME' ? '+' : '−' }}&nbsp;{{ tx.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                </span>
+                <div class="tx-person"
+                     [style.background-color]="tx.paidByPerson.color"
+                     [matTooltip]="'Pago por ' + tx.paidByPerson.name">
+                  {{ tx.paidByPerson.name.charAt(0).toUpperCase() }}
+                </div>
               </div>
-            </div>
 
-            <div class="tx-actions">
-              <button mat-icon-button class="action-btn" (click)="openEditForm(tx)" matTooltip="Editar">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button class="action-btn action-btn--delete" (click)="confirmDelete(tx)" matTooltip="Excluir">
-                <mat-icon>delete_outline</mat-icon>
-              </button>
-            </div>
+              <div class="tx-actions">
+                <button mat-icon-button class="action-btn" (click)="openEditForm(tx)" matTooltip="Editar">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button class="action-btn action-btn--delete" (click)="confirmDelete(tx)" matTooltip="Excluir">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
 
-          </div>
+            </div>
+          }
+
         }
       </div>
     }

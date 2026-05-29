@@ -156,6 +156,7 @@
   gap: 10px;
 }
 
+// ---- Item à vista (sem parcelamento) ----
 .tx-item {
   display: flex;
   align-items: center;
@@ -183,8 +184,141 @@
   &--expense {
     border-left: 3px solid var(--color-expense);
   }
+
+  // Versão dentro do expansion panel: sem borda própria (o painel já tem)
+  &--no-border {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    width: 100%;
+
+    &:hover {
+      box-shadow: none;
+      transform: none;
+    }
+  }
 }
 
+// ---- Accordion / Expansion Panel para parcelados ----
+.tx-accordion {
+  // Remove sombra e arredondamento padrão do Material — usamos os nossos
+  .mat-expansion-panel {
+    box-shadow: none !important;
+  }
+}
+
+.tx-panel {
+  background: var(--color-bg-card) !important;
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+  overflow: hidden;
+
+  &--income {
+    border-left: 3px solid var(--color-income) !important;
+  }
+
+  &--expense {
+    border-left: 3px solid var(--color-expense) !important;
+  }
+}
+
+.tx-panel-header {
+  padding: 14px 14px !important;
+  height: auto !important;
+  min-height: unset !important;
+
+  // Remove o fundo de hover padrão do Material
+  &:hover {
+    background: color-mix(in srgb, var(--color-primary) 5%, transparent) !important;
+  }
+
+  .mat-expansion-panel-header-title {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+// ---- Conteúdo do painel de parcelas ----
+.installments-panel {
+  padding: 0 14px 14px;
+  border-top: 1px dashed var(--color-border);
+  margin-top: 4px;
+  padding-top: 12px;
+}
+
+.installments-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  padding: 8px 0;
+}
+
+.installments-empty {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  padding: 8px 0;
+  margin: 0;
+}
+
+.installments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  thead tr {
+    th {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-secondary);
+      padding: 4px 8px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  tbody tr {
+    td {
+      padding: 8px 8px;
+      color: var(--color-text-primary);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+
+    // Destaque: parcela do mês atual — fundo verde-menta suave (20% opacidade)
+    &.installment-row--current {
+      td {
+        background: color-mix(in srgb, #7fc4a0 20%, transparent);
+        font-weight: 600;
+      }
+    }
+  }
+
+  .col-num {
+    width: 32px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-primary);
+    text-align: center;
+  }
+
+  .col-value {
+    text-align: right;
+    font-family: var(--font-display);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}
+
+// ---- Elementos comuns ----
 .tx-icon {
   width: 42px;
   height: 42px;
@@ -206,6 +340,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 
   &__title {
     font-size: 0.92rem;
@@ -234,11 +375,36 @@
   font-weight: 600;
   padding: 3px 9px;
   border-radius: 999px;
+  font-family: var(--font-body);
 
   &--split {
     background: var(--color-bg-surface);
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
+  }
+
+  // Badge de parcela: cor lilás do design system
+  &--installment {
+    background: color-mix(in srgb, #b8a9d9 25%, var(--color-bg-card));
+    color: #6b5b9e;
+    border: 1px solid color-mix(in srgb, #b8a9d9 60%, transparent);
+    white-space: nowrap;
+    cursor: default;
+    flex-shrink: 0;
+
+    // Modo escuro: ajusta contraste
+    @media (prefers-color-scheme: dark) {
+      color: #c9bce3;
+      background: color-mix(in srgb, #b8a9d9 20%, transparent);
+    }
+  }
+}
+
+// Suporte ao modo escuro via classe no body (ThemeService)
+:host-context(body.dark) {
+  .chip--installment {
+    color: #c9bce3;
+    background: color-mix(in srgb, #b8a9d9 20%, transparent);
   }
 }
 
