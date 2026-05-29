@@ -1,38 +1,34 @@
 # Planning — Sprint 04
-**Data:** 2026-05-28
+**Data:** 2026-05-29
 **Sprint:** 04 de 07
-**Período:** 2026-05-28 → 2026-06-10 (10 dias úteis)
-**Fatia do roadmap:** 3b — Geração automática de parcelas (Installment)
+**Período:** Semanas 7–8
+**Fatia do roadmap:** 3b — Parcelamentos (geração automática de Installment)
 **Conduzido por:** Scrum Master / Arquiteto
 
 ---
 
 ## Objetivo do sprint
 
-Ao fim do sprint, uma compra parcelada no cartão de crédito gerará automaticamente N
-registros de `Installment`, cada um com o `reference_month` correto baseado no
-`closing_day` do cartão. A lista de lançamentos exibirá badge "X/N" e o usuário
-poderá expandir para ver todas as parcelas. A soma das parcelas será sempre exatamente
-igual ao valor total da compra.
+Ao fim do sprint, o usuário poderá criar uma compra parcelada no cartão de crédito
+e o sistema gerará automaticamente as N parcelas nos meses corretos, calculados com base
+no dia de fechamento do cartão. A lista de lançamentos exibirá um badge "X/N" nas compras
+parceladas, e o usuário poderá expandir para ver todas as parcelas com destaque no mês atual.
 
 ---
 
 ## Contexto técnico
 
-- **Schema:** tabela `installment` já existe em V2__initial_schema.sql com todos os
-  campos necessários (id UUID, transaction_id FK com ON DELETE CASCADE, number int,
-  amount NUMERIC 12,2, reference_month DATE). Índices em `reference_month` e
-  `transaction_id` já criados. **Nenhuma migration nova é necessária.**
-- **TransactionService.create():** atualmente lança exceção placeholder quando
-  `installmentsTotal > 1`. O backend deve remover esse placeholder e implementar
-  a chamada a `InstallmentService.generateInstallments()`.
-- **TransactionResponse:** o campo `cardId` (UUID simples) deve ser substituído
-  pelo objeto `card: { id, name }` para facilitar exibição no frontend.
-  Para transações sem cartão, `card: null`.
-- **Card entity:** já implementada com `closingDay` e `dueDay` (int 1–31).
-- **Algoritmo de reference_month:** documentado em
-  `memory/decisions/2026-05-28-installment-reference-month-algorithm.md`.
-- **Limite de parcelas:** máximo 48 parcelas (`installmentsTotal` entre 1 e 48).
+- **Schema:** tabela `installment` já existe em V2__initial_schema.sql com as colunas
+  `id`, `transaction_id`, `number`, `amount`, `reference_month` (DATE, dia sempre = 1).
+  Índices `idx_installment_reference_month` e `idx_installment_transaction_id` já criados.
+  Constraint `ON DELETE CASCADE` em `fk_installment_transaction` garante remoção em cascata.
+- **Migration necessária:** nenhuma. O DBA deve apenas confirmar que o índice
+  `idx_installment_reference_month` está presente (já consta em V2).
+- **Entidades existentes mergeadas em master:** User, Person, Category, Card, Transaction
+  com todos os seus repositórios, serviços e controllers.
+- **Restrição removida:** o bloqueio de `installmentsTotal > 1` do Sprint 02 deve ser
+  removido do `TransactionService` ao implementar S-04-01.
+- **Contrato da API:** ver `docs/api.md` seção "Fatia 3b — Parcelamentos".
 
 ---
 
@@ -40,216 +36,212 @@ igual ao valor total da compra.
 
 | ID | Story | Papel | Pontos | Depende de |
 |---|---|---|---|---|
-| S-04-00 | Validar schema de installment (sem migration) | DBA | 1 | — |
-| S-04-01 | Geração de parcelas — backend completo | Backend | 8 | S-04-00 |
-| S-04-02 | Testes críticos do algoritmo de parcelas | QA | 5 | S-04-01 |
-| S-04-03 | Visualização de parcelas no frontend | Frontend | 4 | S-04-01 |
-| S-04-04 | Revisão e merge | Revisor + DevOps | 1 | S-04-02, S-04-03 |
+| S-04-00 | DBA: confirmar índice installment.reference_month | DBA | 1 | — |
+| S-04-01 | Backend: geração automática de parcelas | Backend + QA | 8 | S-04-00 |
+| S-04-02 | Frontend: badge e detalhe de parcelas | Frontend | 4 | S-04-01 |
+| S-04-03 | Revisor: revisão da lógica de parcelamento | Revisor | 2 | S-04-01 |
+| S-04-04 | DevOps: merge + tag fatia-3 | DevOps | 1 | S-04-02, S-04-03 |
 
-**Total de pontos:** 19
+**Total de pontos:** 16
 
 ---
 
 ## Detalhamento das stories
 
-### S-04-00 · Validar schema de installment (DBA)
-**Branch:** não necessária (apenas leitura/validação — sem commit)
+### S-04-00 · DBA — Confirmar índice reference_month
+**Papel:** DBA | **Pontos:** 1 | **Branch:** `feature/s04-schema`
 
-Responsabilidades:
-- Confirmar que `V2__initial_schema.sql` contém a tabela `installment` com:
-  - `id UUID PRIMARY KEY`
-  - `transaction_id UUID NOT NULL REFERENCES transaction(id) ON DELETE CASCADE`
-  - `number INTEGER NOT NULL CHECK (number >= 1)`
-  - `amount NUMERIC(12,2) NOT NULL`
-  - `reference_month DATE NOT NULL` (sempre dia 1 do mês)
-  - Índice em `installment(reference_month)` e `installment(transaction_id)`
-- Confirmar que `ON DELETE CASCADE` está ativo na FK `transaction_id` →
-  quando a `Transaction` pai é excluída, todas as `Installment` filhas são
-  removidas automaticamente pelo banco.
-- Documentar resultado em `memory/sprints/sprint-04.md`.
+| Tarefa | Responsável | Status |
+|---|---|---|
+| Verificar que `idx_installment_reference_month` existe em V2 | DBA | PENDENTE |
+| Confirmar constraint `chk_installment_reference_month_day` (dia=1) | DBA | PENDENTE |
+| Verificar constraint `ON DELETE CASCADE` em `fk_installment_transaction` | DBA | PENDENTE |
+| Rodar `./mvnw test` para confirmar BUILD SUCCESS | DBA | PENDENTE |
+| Atualizar sprint-04.md: S-04-00 CONCLUIDO | DBA | PENDENTE |
 
-> Resultado esperado: confirmação de que tudo está em ordem. Nenhuma migration nova.
+**Critérios de aceite:**
+- Índice confirmado presente (sem necessidade de nova migration).
+- Se ausente (não esperado): criar `V7__add_installment_indexes.sql`.
 
 ---
 
-### S-04-01 · Geração de parcelas — backend completo
-**Branch:** `feature/s04-backend`
+### S-04-01 · Backend — Geração de parcelas
+**Papel:** Backend + QA | **Pontos:** 8 | **Branch:** `feature/s04-backend`
+**Depende de:** S-04-00
 
-Tarefas em ordem:
+| Tarefa | Responsável | Status |
+|---|---|---|
+| Criar entidade `Installment.java` (JPA, sem `@Version` próprio) | Backend | PENDENTE |
+| Criar `InstallmentRepository.java` | Backend | PENDENTE |
+| Criar `InstallmentService.generateInstallments(transaction, card)` | Backend | PENDENTE |
+| Implementar lógica de `reference_month` com base em `closing_day` | Backend | PENDENTE |
+| Implementar tratamento de virada de ano (dez → jan) | Backend | PENDENTE |
+| Implementar tratamento de closing_day em meses curtos (ex.: 31 em fev) | Backend | PENDENTE |
+| Implementar arredondamento: última parcela absorve diferença | Backend | PENDENTE |
+| Remover bloqueio de `installmentsTotal > 1` do `TransactionService` | Backend | PENDENTE |
+| Chamar `generateInstallments()` no `TransactionService.create()` quando `installmentsTotal > 1` | Backend | PENDENTE |
+| Incluir lista de parcelas na resposta do `POST /api/transactions` (quando parcelado) | Backend | PENDENTE |
+| Implementar `GET /api/transactions/{id}/installments` | Backend | PENDENTE |
+| Implementar `GET /api/installments?month=yyyy-MM` | Backend | PENDENTE |
+| Atualizar `DELETE /api/transactions/{id}`: remover bloqueio para parcelados (cascade resolve) | Backend | PENDENTE |
+| Testes unitários: InstallmentServiceTest (ver casos abaixo) | QA | PENDENTE |
+| Testes de integração: InstallmentIntegrationTest | QA | PENDENTE |
 
-| # | Tarefa | Detalhe |
-|---|--------|---------|
-| 1 | `Installment.java` (entidade JPA) | `@Entity @Table("installment")`, campos: id (UUID, gerado), transaction (ManyToOne lazy), number (int), amount (BigDecimal), referenceMonth (LocalDate) |
-| 2 | `InstallmentRepository.java` | `JpaRepository<Installment, UUID>` + `findByTransactionIdOrderByNumberAsc(UUID transactionId)` |
-| 3 | `InstallmentResponse.java` (DTO saída) | id (UUID), number (int), amount (BigDecimal), referenceMonth (LocalDate serializado como "yyyy-MM-dd") |
-| 4 | `InstallmentService.java` | Método `generateInstallments(Transaction tx, Card card)`: implementa o algoritmo canônico de reference_month e arredondamento; persiste N registros |
-| 5 | Atualizar `TransactionService.create()` | Remover placeholder de exceção; carregar `Card` pelo `cardId`; chamar `installmentService.generateInstallments(tx, card)` quando `installmentsTotal >= 2` |
-| 6 | Novas validações em `TransactionService.create()` | Parcelado exige CREDIT + cardId; `installmentsTotal` entre 1 e 48 |
-| 7 | Bloquear `TransactionService.update()` para parcelados | Retornar 422 com mensagem pt-br quando `transaction.installmentsTotal > 1` |
-| 8 | `DELETE /api/transactions/{id}` para parcelados | Remover restrição que bloqueava; ON DELETE CASCADE cuida das parcelas no banco |
-| 9 | `InstallmentController.java` | `GET /api/transactions/{id}/installments` → delega ao `InstallmentService`; retorna 200 com lista ou 404 |
-| 10 | Ajustar `TransactionResponse` | Campo `cardId` (UUID) → objeto `card: { id, name }` usando `CardResponse` simplificado ou DTO interno |
+**Casos de teste obrigatórios (QA):**
 
-**Regras críticas de implementação:**
+| ID | Cenário | Esperado |
+|---|---|---|
+| TC-01 | Compra 10/11, closing=15, 3x | Parcelas nov/2026, dez/2026, jan/2027 |
+| TC-02 | Compra 20/11, closing=15, 3x | Parcelas dez/2026, jan/2027, fev/2027 |
+| TC-03 | Compra 31/01, closing=28, 2x | Parcelas fev/2027, mar/2027 |
+| TC-04 | Compra 28/12, closing=28, 2x | Parcelas dez/2026, jan/2027 |
+| TC-05 | Compra 10/11, closing=15, 1x (crédito à vista) | 1 parcela nov/2026 |
+| TC-06 | Valor R$100,01 em 3x | Parcelas R$33,33 / R$33,33 / R$33,35 |
+| TC-07 | Valor R$10,00 em 3x | Parcelas R$3,33 / R$3,33 / R$3,34 |
+| TC-08 | Valor R$100,00 em 4x | 4 parcelas de R$25,00 |
+| TC-09 | Compra 15/12, closing=15, 3x | Parcelas dez/2026, jan/2027, fev/2027 (dia=closing → mesmo mês) |
+| TC-10 | Compra em fev, closing=31, 2x | Parcela 1 em fev (closing efetivo = último dia do mês) |
+| TC-11 | GET /api/transactions/{id}/installments — transação parcelada | Retorna N parcelas com isCurrent correto |
+| TC-12 | GET /api/transactions/{id}/installments — transação à vista | Retorna [] |
+| TC-13 | GET /api/installments?month=2026-11 | Retorna só parcelas do mês, com dados da transação pai |
+| TC-14 | DELETE transação parcelada | 204; parcelas removidas (verificar no banco) |
+| TC-15 | POST parcelado com paymentMethod!=CREDIT | 400 — "Parcelamento só é permitido para pagamentos com cartão de crédito." |
+| TC-16 | POST parcelado com type=INCOME | 400 — "Receitas não podem ser parceladas." |
+| TC-17 | POST parcelado com installmentsTotal=49 | 400 — "O número de parcelas deve estar entre 2 e 48." |
 
-```java
-// Algoritmo de firstReferenceMonth:
-YearMonth ym = (purchaseDate.getDayOfMonth() < card.getClosingDay())
-    ? YearMonth.from(purchaseDate)
-    : YearMonth.from(purchaseDate).plusMonths(1);
-LocalDate firstReferenceMonth = ym.atDay(1);
-
-// Cálculo de amounts:
-BigDecimal base = totalAmount.divide(
-    BigDecimal.valueOf(n), 2, RoundingMode.DOWN);
-BigDecimal last = totalAmount.subtract(
-    base.multiply(BigDecimal.valueOf(n - 1)));
-// parcelas 1..N-1 recebem `base`; parcela N recebe `last`
-```
-
-**Tratamento de erros:**
-- `installmentsTotal >= 2` sem CREDIT → 400 "Compras parceladas só podem ser feitas com cartão de crédito."
-- `installmentsTotal >= 2` sem `cardId` → 400 "Pagamento parcelado exige a seleção de um cartão de crédito."
-- `installmentsTotal` fora de 1–48 → 400 "O número de parcelas deve ser entre 1 e 48."
-- `PUT` em parcelado → 422 "Lançamentos parcelados não podem ser editados individualmente. Exclua e recrie o lançamento se necessário."
-- `GET /api/transactions/{id}/installments` com ID inválido → 404 "Lançamento não encontrado."
-
----
-
-### S-04-02 · Testes críticos do algoritmo de parcelas (QA)
-**Branch:** `feature/s04-tests`
-
-Casos de teste obrigatórios — unitários (`InstallmentServiceTest`):
-
-| Caso | Cenário | Resultado esperado |
-|------|---------|-------------------|
-| TC-01 | Compra 2026-05-15, closing=20, 3x, R$ 1.500,00 | referenceMonths: 05-01, 06-01, 07-01; amounts: 500,00, 500,00, 500,00 |
-| TC-02 | Compra 2026-05-25, closing=20, 3x, R$ 1.500,00 | referenceMonths: 06-01, 07-01, 08-01 |
-| TC-03 | Compra 2026-05-20, closing=20, 2x | Dia igual ao closing → mês seguinte: 06-01, 07-01 |
-| TC-04 | Compra 2026-11-25, closing=20, 3x | Virada de ano: 12-01, 2027-01-01, 2027-02-01 |
-| TC-05 | Compra 2026-01-31, closing=1, 2x | closing=1, dia 31 >= 1 → mês seguinte: 02-01, 03-01 |
-| TC-06 | Arredondamento: R$ 10,00 em 3x | 3,33 + 3,33 + 3,34 = 10,00 |
-| TC-07 | Arredondamento: R$ 100,00 em 3x | 33,33 + 33,33 + 33,34 = 100,00 |
-| TC-08 | Arredondamento: R$ 1.500,01 em 3x | 500,00 + 500,00 + 500,01 = 1.500,01 |
-| TC-09 | Compra divisível exata: R$ 300,00 em 3x | 100,00 + 100,00 + 100,00 = 300,00 |
-| TC-10 | closing_day=31, compra 2026-02-15 | 15 < 31 → mesmo mês: 02-01 |
-| TC-11 | closing_day=28, compra 2026-02-28 | 28 >= 28 → mês seguinte: 03-01 |
-| TC-12 | installmentsTotal=1 para compra CREDIT | Nenhuma installment gerada; lista de installments retorna [] |
-| TC-13 | POST parcelado sem paymentMethod=CREDIT | 400 com mensagem correta |
-| TC-14 | POST parcelado sem cardId | 400 com mensagem correta |
-| TC-15 | POST com installmentsTotal=49 | 400 com mensagem de limite |
-| TC-16 | PUT em lançamento parcelado | 422 com mensagem de bloqueio |
-| TC-17 | DELETE em lançamento parcelado | 204; lançamento e installments removidos |
-| TC-18 | GET installments de lançamento à vista | 200 com lista vazia [] |
-| TC-19 | GET installments de lançamento parcelado | 200 com N itens; soma = totalAmount |
-| TC-20 | GET installments de transação inexistente | 404 |
-
-Testes de integração (`InstallmentIntegrationTest`):
-- Criar compra parcelada via POST e verificar installments geradas no banco
-- Excluir transação parcelada e verificar que installments foram removidas (CASCADE)
-- GET /api/transactions/{id}/installments retorna lista ordenada por number
+**Critérios de aceite:**
+- Compra parcelada gera N `Installment`; `reference_month` correto em todos os casos de borda.
+- Soma das parcelas = valor total da compra (validado nos TC-06, TC-07, TC-08).
+- `GET /api/transactions/{id}/installments` retorna lista com `isCurrent` correto.
+- `GET /api/installments?month=yyyy-MM` retorna dados da transação pai.
+- `DELETE` de transação parcelada remove cascateia `Installment`.
+- Todos os 17 casos de teste passando.
 
 ---
 
-### S-04-03 · Visualização de parcelas no frontend
-**Branch:** `feature/s04-frontend`
+### S-04-02 · Frontend — Badge e detalhe de parcelas
+**Papel:** Frontend | **Pontos:** 4 | **Branch:** `feature/s04-frontend`
+**Depende de:** S-04-01 (endpoint disponível)
 
-Tarefas em ordem (S-04-01 deve estar mergeada ou contratos mockados):
+| Tarefa | Responsável | Status |
+|---|---|---|
+| Serviço HTTP `InstallmentService` (Angular) — `getByTransaction(id)` e `getByMonth(month)` | Frontend | PENDENTE |
+| Badge "X/N" no componente de lista de lançamentos para `installmentsTotal > 1` | Frontend | PENDENTE |
+| Componente de expansão/accordion com lista de parcelas (número, mês, valor) | Frontend | PENDENTE |
+| Destaque visual (cor de fundo diferente) na parcela com `isCurrent = true` | Frontend | PENDENTE |
+| Campo `installmentsTotal` habilitado no formulário de novo lançamento (1 a 48) | Frontend | PENDENTE |
+| `npm run build` sem erros | Frontend | PENDENTE |
 
-| # | Tarefa | Detalhe |
-|---|--------|---------|
-| 1 | `InstallmentService` (HTTP) | Serviço Angular — `getByTransactionId(id)`: GET /api/transactions/{id}/installments |
-| 2 | Badge "X/N" na lista de lançamentos | Em `TransactionListComponent`: exibir badge coral/areia quando `installmentsTotal > 1`. Badge mostra apenas "Nx" (ex.: "3x") pois o número da parcela corrente requer cruzar com reference_month. |
-| 3 | Componente de expansão de parcelas | Ao clicar no badge ou no lançamento parcelado, expandir painel com lista de parcelas; chamar `InstallmentService.getByTransactionId()` somente ao expandir (lazy load) |
-| 4 | Destaque visual na parcela do mês atual | Parcela cujo `referenceMonth` == mês selecionado no filtro recebe estilo destacado (fundo azul claro ou borda azul) |
-| 5 | Ocultar botão "Editar" para parcelados | Lançamentos com `installmentsTotal > 1` não exibem o botão de edição |
-| 6 | Campo "Parcelas" no formulário de lançamento | Exibir `<mat-select>` com opções 1x a 48x quando `paymentMethod = CREDIT`; ocultar para outros métodos |
-
-Design system:
-- Badge de parcela: cor areia (#F5ECD7) com texto "Nx" em fonte Plus Jakarta Sans bold.
-- Parcela do mês atual: fundo azul pálido (#E8F0FB) ou borda esquerda azul (#4a7fc4).
-- Painel de expansão: deve ser colapsável; animação suave (Angular Material expansion panel).
-
----
-
-### S-04-04 · Revisão e merge (Revisor + DevOps)
-**Branch:** — (age sobre as branches abertas)
-
-Checklist do revisor:
-- [ ] Algoritmo de reference_month produz exatamente os resultados dos exemplos em TC-01 a TC-05
-- [ ] Soma das parcelas sempre == totalAmount (cobrir TC-06 a TC-09)
-- [ ] Nenhuma entidade JPA exposta diretamente em controller (DTOs na fronteira)
-- [ ] `Installment` entity não tem `@Version` (sem necessidade: parcelas são imutáveis após geração)
-- [ ] `InstallmentService.generateInstallments()` é chamado em transação (`@Transactional`)
-- [ ] ON DELETE CASCADE testado: excluir transaction remove installments
-- [ ] Frontend: badge visível; expansão carrega parcelas; parcela do mês destacada
-- [ ] Frontend: campo "Parcelas" visível apenas quando método = CREDIT
-- [ ] Todos os testes passando: `./mvnw test`
-
-Checklist DevOps:
-- [ ] Branches mergeadas para master via `git merge --no-ff`
-- [ ] `docker compose up --build` sem erro
-- [ ] Tag `fatia-3` criada em master (esta tag encerra a fatia 3 completa: 3a + 3b)
+**Critérios de aceite:**
+- Badge "X/N" visível para lançamentos parcelados; ausente para lançamentos à vista.
+- Expansão exibe todas as parcelas ordenadas por número.
+- Parcela do mês atual visualmente destacada.
+- Formulário de lançamento permite selecionar número de parcelas de 2 a 48 quando
+  `paymentMethod = CREDIT`.
 
 ---
 
-## Ordem de execução e paralelismo
+### S-04-03 · Revisor — Revisão da lógica de parcelamento
+**Papel:** Revisor | **Pontos:** 2
+**Depende de:** S-04-01
+
+| Tarefa | Status |
+|---|---|
+| Revisar `InstallmentService`: casos de borda (virada de ano, meses curtos) | PENDENTE |
+| Verificar que `BigDecimal` é usado em todos os cálculos monetários | PENDENTE |
+| Verificar que nenhuma entidade JPA é exposta diretamente no controller | PENDENTE |
+| Verificar mensagens de erro em pt-br | PENDENTE |
+| Verificar autenticação obrigatória nos novos endpoints | PENDENTE |
+| Registrar resultado em `memory/reviews/review-sprint-04.md` | PENDENTE |
+
+---
+
+### S-04-04 · DevOps — Merge e tag
+**Papel:** DevOps | **Pontos:** 1
+**Depende de:** S-04-02, S-04-03
+
+| Tarefa | Status |
+|---|---|
+| Merge `feature/s04-schema` → master (--no-ff) | PENDENTE |
+| Merge `feature/s04-backend` → master (--no-ff) | PENDENTE |
+| Merge `feature/s04-tests` → master (--no-ff) | PENDENTE |
+| Merge `feature/s04-frontend` → master (--no-ff) | PENDENTE |
+| Rodar `docker compose up --build` e validar fluxo completo | PENDENTE |
+| Criar tag `fatia-3` no git | PENDENTE |
+
+---
+
+## Tarefas paralelas identificadas
 
 ```
-DIA 1 (hoje):
-  ├── Arquiteto:  Planning + contrato API Fatia 3b (concluído)
-  └── DBA:        S-04-00 — validar schema installment (sem commit)
+DIA 1 (paralelo):
+├── DBA:      S-04-00 — confirmar índice reference_month (branch: feature/s04-schema)
+└── Arquiteto: docs/api.md Fatia 3b + planning-sprint-04.md + decisoes.md (branch: docs/s04-planning)
 
-DIA 1–7 (núcleo — backend sequencial, depende de S-04-00 confirmado):
-  └── Backend:    S-04-01 — Installment entity + service + controller + ajustes Transaction
+DIA 2–7 (núcleo sequencial):
+└── Backend:  S-04-01 — InstallmentService + endpoints (branch: feature/s04-backend)
 
-DIA 4–7 (paralelo ao backend — QA pode usar contrato como base):
-  └── QA:         S-04-02 — testes unitários e de integração (branch: feature/s04-tests)
+DIA 2–5 (paralelo ao backend):
+└── QA:       Preparar e implementar casos de teste TC-01 a TC-17 (branch: feature/s04-tests)
 
-DIA 6–9 (após backend mergeado ou usando mocks do contrato):
-  └── Frontend:   S-04-03 — badge, expansão, campo parcelas (branch: feature/s04-frontend)
+DIA 6–9 (após backend):
+└── Frontend: S-04-02 — Badge + expansão + formulário (branch: feature/s04-frontend)
 
-DIA 8–9:
-  └── Revisor:    S-04-04 — revisão de todos os branches
+DIA 8–9 (paralelo):
+└── Revisor:  S-04-03 — Revisão da lógica de parcelamento
 
-DIA 9–10:
-  └── DevOps:     merges + docker compose up --build + tag fatia-3
+DIA 10 (fechamento):
+└── DevOps:   S-04-04 — Merges + docker compose up --build + tag fatia-3
 ```
-
-**Dependências críticas:**
-- S-04-01 depende de S-04-00 (DBA confirma schema)
-- S-04-02 requer S-04-01 para testar o service real (unit tests podem antecipar com mocks)
-- S-04-03 pode iniciar com mock baseado no contrato do api.md
-- S-04-04 requer S-04-01, S-04-02 e S-04-03 concluídos
 
 ---
 
 ## Riscos e pontos de atenção
 
 | Risco | Probabilidade | Impacto | Mitigação |
-|-------|--------------|---------|-----------|
-| Arredondamento incorreto — soma das parcelas ≠ totalAmount | Alta | Crítico | TC-06 a TC-09 cobrem os casos; algoritmo com RoundingMode.DOWN + ajuste na última parcela |
-| closing_day >= 29 em meses curtos — comportamento do algoritmo | Média | Alto | TC-10 e TC-11 cobrem os casos; algoritmo compara getDayOfMonth() diretamente, sem problema |
-| Virada de ano — plusMonths() além de dezembro | Média | Alto | TC-04 cobre: Java YearMonth.plusMonths() lida automaticamente |
-| ON DELETE CASCADE não ativo em V2 — delete de transaction não remove installments | Baixa | Crítico | DBA confirma em S-04-00; TC-17 valida o comportamento |
-| Frontend: lazy load de parcelas causa flickering | Baixa | Baixo | Angular Material expansion panel com loading spinner enquanto chama API |
-| Ajuste em TransactionResponse (card object) quebra frontend existente | Alta | Alto | Backend altera o DTO e Frontend atualiza na mesma sprint para manter coerência |
+|---|---|---|---|
+| Arredondamento com BigDecimal: uso incorreto de `double` em divisão | Médio | Alto (centavos errados) | Code review obrigatório no `InstallmentService`; TC-06, TC-07, TC-08 |
+| Virada de ano: `YearMonth.plusMonths(1)` deve funcionar corretamente | Baixo | Alto (parcelas em mês errado) | TC-01, TC-02 cobrem nov→jan |
+| Meses curtos: closing_day=31 em fevereiro | Médio | Médio (NullPointer ou parcela errada) | TC-10 cobre o caso |
+| Dia=closing_day: comparação deve ser ≤ não < | Alto (pegadinha) | Alto | TC-09 cobre o caso exato |
+| Concorrência: dois usuários criando parcelas simultaneamente | Baixo | Baixo (constraint uq_installment_transaction_number detecta) | Já coberto por constraint no banco |
+| Frontend exibindo `installmentsTotal` de transações antigas (Sprint 02) com valor 1 | Baixo | Baixo (badge não aparece = correto) | Badge condicional em `installmentsTotal > 1` |
+
+---
+
+## Decisões de arquitetura tomadas neste sprint
+
+1. **Lógica de reference_month:** data ≤ closing_day → mesmo mês; data > closing_day → mês seguinte.
+   Meses curtos: `Math.min(closingDay, lastDayOfMonth)`. Ver `docs/decisoes.md`.
+
+2. **Arredondamento:** floor em todas as parcelas exceto a última (absorve diferença).
+   Implementar com `BigDecimal.ROUND_FLOOR` / `setScale(2, RoundingMode.FLOOR)`.
+
+3. **Lançamento à vista no crédito (1x) também gera Installment.**
+   Uniformiza o acerto de contas do Sprint 06.
+
+4. **Parcelamento restrito a EXPENSE + CREDIT, máx. 48 parcelas.**
+
+5. **`isCurrent` calculado no backend** (baseado em `LocalDate.now()`), não no frontend.
 
 ---
 
 ## Definição de pronto (DoD) do sprint
 
-- [ ] S-04-00: DBA confirma schema installment sem migration necessária
-- [ ] S-04-01: Compra parcelada gera N Installments; reference_month correto; soma exata
-- [ ] S-04-01: PUT em parcelado retorna 422; DELETE remove transaction + cascade installments
-- [ ] S-04-01: GET /api/transactions/{id}/installments funcionando
-- [ ] S-04-01: TransactionResponse.card inclui { id, name } em vez de cardId UUID simples
-- [ ] S-04-02: 20 casos de teste passando (TC-01 a TC-20)
-- [ ] S-04-03: Badge "Nx" visível na lista; expansão exibe parcelas; mês atual destacado
-- [ ] S-04-03: Campo "Parcelas" visível apenas para método CREDIT
-- [ ] S-04-04: Revisão sem itens bloqueantes; `./mvnw test` BUILD SUCCESS
-- [ ] `docker compose up --build` limpo
-- [ ] Tag `fatia-3` criada em master
+- [ ] S-04-00: índice confirmado; sem migration nova necessária
+- [ ] S-04-01: `POST /api/transactions` com `installmentsTotal > 1` gera N Installments
+- [ ] S-04-01: `reference_month` correto em todos os 17 casos de teste
+- [ ] S-04-01: soma das parcelas = valor total da compra
+- [ ] S-04-01: `GET /api/transactions/{id}/installments` implementado com `isCurrent`
+- [ ] S-04-01: `GET /api/installments?month=yyyy-MM` implementado com dados da transação pai
+- [ ] S-04-01: `DELETE /api/transactions/{id}` remove cascateia parcelas
+- [ ] S-04-02: badge "X/N" visível na lista de lançamentos
+- [ ] S-04-02: componente de expansão com lista de parcelas
+- [ ] S-04-02: destaque visual na parcela do mês atual
+- [ ] Todos os testes passando (`./mvnw test` → BUILD SUCCESS)
+- [ ] `npm run build` sem erros
+- [ ] `docker compose up --build` limpo com fluxo completo validado
+- [ ] Tag `fatia-3` criada no git
 - [ ] Review registrada em `memory/reviews/review-sprint-04.md`
 - [ ] Retro registrada em `memory/retros/retro-sprint-04.md`
 - [ ] Learnings atualizados em `memory/learnings/`
