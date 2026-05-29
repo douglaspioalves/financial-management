@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 2)
 **Fatia:** 3b
 **Objetivo:** Gerar parcelas automaticamente ao criar compra parcelada; exibir badges na lista.
-**Status:** 🔵 EM ANDAMENTO
+**Status:** 🟢 EM ANDAMENTO
 
 ---
 
@@ -53,14 +53,14 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-04-02 · Visualização de parcelas
-**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-04-01 | **Status:** `PENDENTE`
+**Papel:** Frontend | **Pontos:** 4 | **Depende de:** S-04-01 | **Status:** `CONCLUIDO`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Badge "X/N" no componente de lista de lançamentos | Frontend | PENDENTE |
-| Componente de expansão com lista de parcelas | Frontend | PENDENTE |
-| Destaque visual na parcela do mês atual | Frontend | PENDENTE |
-| Serviço HTTP InstallmentService | Frontend | PENDENTE |
+| Badge "X/N" no componente de lista de lançamentos | Frontend | CONCLUIDO |
+| Componente de expansão com lista de parcelas | Frontend | CONCLUIDO |
+| Destaque visual na parcela do mês atual | Frontend | CONCLUIDO |
+| Serviço HTTP InstallmentService | Frontend | CONCLUIDO |
 
 ---
 
@@ -83,6 +83,7 @@ DIA 9–10 (fechamento)
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
 | 1 | 2026-05-28 | Planning concluído; contrato da API Fatia 3b definido; decisão de algoritmo registrada | — |
+| 1 | 2026-05-29 | S-04-02 (Frontend: badge + expansion panel + InstallmentService) | nenhum |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
@@ -99,7 +100,7 @@ DIA 9–10 (fechamento)
 
 - [ ] S-04-01: Compra parcelada gera N Installments; reference_month correto em todos os casos de borda
 - [ ] S-04-01: Soma das parcelas = valor total da compra
-- [ ] S-04-02: Badge visível na lista; expansão exibe todas as parcelas
+- [x] S-04-02: Badge visível na lista; expansão exibe todas as parcelas
 - [ ] Todos os testes de parcelamento passando
 - [ ] `docker compose up --build` limpo
 - [ ] Tag `fatia-3` criada no git
