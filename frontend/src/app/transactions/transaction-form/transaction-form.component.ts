@@ -102,7 +102,7 @@ export class TransactionFormComponent implements OnInit {
         categoryId: tx.category.id,
         paidByPersonId: tx.paidByPerson.id,
         paymentMethod: tx.paymentMethod,
-        cardId: tx.cardId ?? null,
+        cardId: tx.card?.id ?? null,
         splitRule: tx.splitRule,
       });
     }
