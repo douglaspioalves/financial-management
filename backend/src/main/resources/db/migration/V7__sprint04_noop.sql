@@ -1,0 +1,35 @@
+-- =============================================================================
+-- V7__sprint04_noop.sql
+-- Gestor de Gastos — Checkpoint de auditoria pré-Sprint 04
+--
+-- Propósito: documentar e certificar que o schema existente está completamente
+-- preparado para a geração automática de parcelas (Installment) do Sprint 04.
+-- Nenhuma alteração estrutural é necessária.
+--
+-- Resultado da auditoria (2026-05-29) — Agente DBA:
+--
+-- [OK] tabela installment
+--       colunas: id, transaction_id, number, amount, reference_month
+--       ON DELETE CASCADE em fk_installment_transaction (V2, linha 137)
+--       CHECK chk_installment_reference_month_day — EXTRACT(DAY) = 1 (V2, linha 141)
+--       UNIQUE uq_installment_transaction_number (transaction_id, number) (V2, linha 143)
+--
+-- [OK] idx_installment_reference_month — installment(reference_month) (V2, linha 211)
+-- [OK] idx_installment_transaction_id  — installment(transaction_id)  (V2, linha 213)
+--
+-- [OK] chk_transaction_card_credit — garante card_id IS NOT NULL ↔ CREDIT (V2, linhas 115-119)
+--       Crítico: Installment só faz sentido para transações CREDIT; constraint reforça no banco.
+--
+-- [OK] chk_transaction_installments — CHECK (installments_total >= 1) (V2, linha 113)
+--
+-- O backend pode implementar InstallmentService e o endpoint
+-- GET /api/transactions/{id}/installments sem necessidade de alteração de schema.
+--
+-- Banco: PostgreSQL 16
+-- Sprint: 04 — Fatia 3b (geração automática de parcelas)
+-- Data: 2026-05-29
+-- =============================================================================
+
+-- Nenhuma instrução DDL/DML necessária.
+-- Esta migration existe exclusivamente como registro de auditoria.
+SELECT 1;
