@@ -25,5 +25,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./cards/cards.routes').then(m => m.cardsRoutes),
   },
+  {
+    path: 'budget',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./budget/budget.routes').then(m => m.budgetRoutes),
+  },
   { path: '**', redirectTo: '/auth/login' },
 ];
