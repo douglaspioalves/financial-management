@@ -25,8 +25,12 @@ public class InstallmentService {
      * Gera e persiste N parcelas para uma compra parcelada.
      *
      * Algoritmo de reference_month:
-     * - Se o dia da compra é anterior ao fechamento do cartão, a primeira parcela
-     *   cai no mesmo mês da compra; caso contrário, cai no mês seguinte.
+     * - Se o dia da compra é anterior ao fechamento efetivo do cartão no mês da compra,
+     *   a primeira parcela cai no mesmo mês da compra; caso contrário, cai no mês seguinte.
+     * - O fechamento efetivo é min(closingDay, lastDayOfPurchaseMonth), para lidar
+     *   corretamente com cartões cujo closingDay=31 em meses com menos de 31 dias
+     *   (ex.: abril tem 30 dias — sem essa correção, purchaseDay < 31 sempre seria
+     *   verdadeiro, colocando todas as compras do mês no mesmo ciclo).
      * - As parcelas seguintes são meses consecutivos.
      *
      * Arredondamento:
@@ -44,8 +48,12 @@ public class InstallmentService {
         LocalDate purchaseDate = transaction.getDate();
         int closingDay = card.getClosingDay();
 
+        // Fechamento efetivo: evita bug em meses curtos quando closingDay=31
+        // (ex.: abril tem 30 dias — min(31, 30) = 30)
+        int effectiveClosingDay = Math.min(closingDay, purchaseDate.lengthOfMonth());
+
         // Determina o YearMonth da primeira parcela
-        YearMonth firstYearMonth = (purchaseDate.getDayOfMonth() < closingDay)
+        YearMonth firstYearMonth = (purchaseDate.getDayOfMonth() < effectiveClosingDay)
                 ? YearMonth.from(purchaseDate)
                 : YearMonth.from(purchaseDate).plusMonths(1);
 
