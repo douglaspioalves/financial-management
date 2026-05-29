@@ -222,13 +222,13 @@ class DashboardIntegrationTest {
                 .andExpect(jsonPath("$.previousMonth.totalExpense").value(800.00));
     }
 
-    // TC-D6: month ausente -> 400
+    // TC-D6: month ausente -> 200 com fallback para o mes atual
     @Test @Order(6)
-    @DisplayName("TC-D6: GET /api/dashboard sem parametro month retorna 400")
-    void getDashboard_missingMonthParam_returns400() throws Exception {
+    @DisplayName("TC-D6: GET /api/dashboard sem parametro month retorna 200 (fallback para mes atual)")
+    void getDashboard_missingMonthParam_returns200() throws Exception {
         mockMvc.perform(get("/api/dashboard")
                         .header("Authorization", "Bearer " + obtainToken()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 
     // TC-D7: month formato invalido -> 400
@@ -252,9 +252,9 @@ class DashboardIntegrationTest {
                         .header("Authorization", "Bearer " + obtainToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalExpense").value(1000.00))
-                .andExpect(jsonPath("$.byCategory").isArray())
-                .andExpect(jsonPath("$.byCategory[0].categoryId").isNotEmpty())
-                .andExpect(jsonPath("$.byCategory[0].total").value(1000.00))
-                .andExpect(jsonPath("$.byCategory[0].percentage").value(100.0));
+                .andExpect(jsonPath("$.expenseByCategory").isArray())
+                .andExpect(jsonPath("$.expenseByCategory[0].categoryId").isNotEmpty())
+                .andExpect(jsonPath("$.expenseByCategory[0].total").value(1000.00))
+                .andExpect(jsonPath("$.expenseByCategory[0].percentage").value(100.0));
     }
 }
