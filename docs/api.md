@@ -807,24 +807,305 @@ Notas sobre o response:
 
 ---
 
-## Fatia 4 — Dashboard (Sprint 05 — a detalhar)
+## Fatia 4 — Dashboard (Sprint 05)
 
-Endpoints previstos:
-- `GET /api/dashboard?month=yyyy-MM`
+> Contrato fechado em 2026-05-29.
+> Nenhuma migration nova é necessária — todas as tabelas já existem (V1–V7).
 
 ---
 
-## Fatia 5 — Orçamento e Recorrência (Sprint 06 — a detalhar)
+### GET /api/dashboard
 
-Endpoints previstos:
-- `GET /api/budgets?month=yyyy-MM`
-- `POST /api/budgets`
-- `PUT /api/budgets/{id}`
-- `DELETE /api/budgets/{id}`
-- `GET /api/recurring-rules`
-- `POST /api/recurring-rules`
-- `PUT /api/recurring-rules/{id}`
-- `DELETE /api/recurring-rules/{id}`
+Retorna os dados agregados do mês para exibição no dashboard principal.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Query params:**
+
+| Param   | Tipo      | Obrigatório | Descrição |
+|---------|-----------|-------------|-----------|
+| `month` | `yyyy-MM` | sim         | Mês consultado (ex.: `2026-05`) |
+
+**Response 200:**
+```json
+{
+  "month": "2026-05",
+  "totalIncome": 10000.00,
+  "totalExpense": 6500.00,
+  "balance": 3500.00,
+  "previousMonth": {
+    "totalIncome": 9500.00,
+    "totalExpense": 6000.00,
+    "balance": 3500.00
+  },
+  "incomeVariation": 5.26,
+  "expenseVariation": 8.33,
+  "expenseByCategory": [
+    {
+      "categoryId": "uuid",
+      "categoryName": "Alimentação",
+      "categoryColor": "#e8927c",
+      "total": 1500.00,
+      "percentage": 23.08
+    }
+  ],
+  "recentTransactions": [
+    {
+      "id": "uuid",
+      "date": "2026-05-15",
+      "description": "Supermercado",
+      "amount": 250.00,
+      "type": "EXPENSE",
+      "categoryName": "Alimentação",
+      "categoryColor": "#e8927c",
+      "paidByPersonName": "Alice"
+    }
+  ]
+}
+```
+
+**Campos do response:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `month` | `string yyyy-MM` | Mês consultado |
+| `totalIncome` | `number` | Soma de todas as receitas do mês (ver regras de agregação) |
+| `totalExpense` | `number` | Soma de todas as despesas do mês (ver regras de agregação) |
+| `balance` | `number` | `totalIncome - totalExpense` (pode ser negativo) |
+| `previousMonth` | `object` | Mesmos campos `totalIncome`, `totalExpense`, `balance` do mês anterior |
+| `incomeVariation` | `number` | Variação percentual de receitas em relação ao mês anterior; `null` se mês anterior sem receita |
+| `expenseVariation` | `number` | Variação percentual de despesas em relação ao mês anterior; `null` se mês anterior sem despesa |
+| `expenseByCategory` | `array` | Despesas agrupadas por categoria, ordenadas por `total` decrescente |
+| `recentTransactions` | `array` | Últimos 10 lançamentos do mês, ordenados por `date` decrescente + `created_at` decrescente |
+
+**Campos de `expenseByCategory`:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `categoryId` | `uuid` | ID da categoria |
+| `categoryName` | `string` | Nome da categoria |
+| `categoryColor` | `string hex` | Cor da categoria (para exibição no gráfico) |
+| `total` | `number` | Total de despesas nesta categoria no mês |
+| `percentage` | `number` | Percentual sobre o `totalExpense` do mês; 2 casas decimais |
+
+**Campos de `recentTransactions`:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | `uuid` | ID do lançamento ou da parcela (ver nota abaixo) |
+| `date` | `string yyyy-MM-dd` | Data do lançamento (`transaction.date`) |
+| `description` | `string \| null` | Descrição do lançamento |
+| `amount` | `number` | Valor efetivo no mês (ver regras de agregação) |
+| `type` | `EXPENSE \| INCOME` | Tipo do lançamento |
+| `categoryName` | `string` | Nome da categoria |
+| `categoryColor` | `string hex` | Cor da categoria |
+| `paidByPersonName` | `string` | Nome de quem pagou |
+
+> **Nota sobre `id` em `recentTransactions`:** para lançamentos à vista, `id` é o UUID da
+> `Transaction`. Para lançamentos parcelados (CREDIT, `installmentsTotal > 1`), o valor
+> exibido vem da `Installment` cujo `reference_month` cai no mês consultado — use o UUID
+> da `Transaction` pai neste campo também, para que o frontend possa navegar ao detalhe.
+
+**Regras de agregação — OBRIGATÓRIAS (backend e QA devem cobrir com testes):**
+
+1. **Lançamentos parcelados (CREDIT + `installmentsTotal > 1`):**
+   - O valor que entra no dashboard é o `amount` da `Installment` cujo `reference_month`
+     é igual ao mês consultado (formato `yyyy-MM-01`).
+   - A `transaction.date` (data de compra) é irrelevante para a agregação mensal.
+
+2. **Todos os outros lançamentos (CASH, DEBIT, PIX, TRANSFER e CREDIT com `installmentsTotal = 1`):**
+   - O valor que entra no dashboard é o `transaction.amount`.
+   - O critério de inclusão é `transaction.date` no intervalo
+     `[primeiro dia do mês, último dia do mês]`.
+
+3. **Receitas (type = INCOME):**
+   - Sempre pelo `transaction.date` (receitas não são parceladas).
+   - Critério: `transaction.date` no mês consultado.
+
+4. **Variação percentual:**
+   - `incomeVariation = ((mesMes - mesAnterior) / mesAnterior) * 100`, arredondado a 2 casas.
+   - Se `mesAnterior = 0`, retornar `null` (indeterminado — não exibir no frontend).
+   - `expenseVariation` segue a mesma fórmula.
+
+5. **`expenseByCategory.percentage`:**
+   - `(total da categoria / totalExpense) * 100`, arredondado a 2 casas decimais.
+   - Se `totalExpense = 0`, retornar lista vazia em `expenseByCategory`.
+
+| Status | Situação |
+|--------|----------|
+| 200 | Dados do dashboard retornados com sucesso |
+| 400 | `month` ausente — "Parâmetro 'month' é obrigatório no formato yyyy-MM." |
+| 400 | `month` em formato inválido — "Formato de mês inválido. Use yyyy-MM (ex.: 2026-05)." |
+| 401 | Token ausente ou inválido |
+
+---
+
+## Fatia 5 — Orçamento (Sprint 05)
+
+> Contrato fechado em 2026-05-29.
+> A tabela `budget` já existe no schema V2. Nenhuma migration nova é necessária.
+>
+> **Escopo do Sprint 05:** apenas CRUD de orçamento + cálculo de consumo.
+> Lançamentos recorrentes (RecurringRule) foram movidos para o Sprint 06.
+
+---
+
+### BudgetResponse — formato compartilhado por GET e PUT
+
+```json
+{
+  "id": "uuid",
+  "categoryId": "uuid",
+  "categoryName": "Alimentação",
+  "categoryColor": "#e8927c",
+  "month": "2026-05-01",
+  "limitAmount": 2000.00,
+  "spentAmount": 1500.00,
+  "remainingAmount": 500.00,
+  "percentage": 75.0,
+  "status": "WARNING",
+  "version": 0
+}
+```
+
+**Campos:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `id` | `uuid` | ID do orçamento |
+| `categoryId` | `uuid` | ID da categoria |
+| `categoryName` | `string` | Nome da categoria |
+| `categoryColor` | `string hex` | Cor da categoria |
+| `month` | `string yyyy-MM-dd` | Mês do orçamento, sempre no formato `yyyy-MM-01` |
+| `limitAmount` | `number` | Limite definido para a categoria no mês |
+| `spentAmount` | `number` | Total já gasto na categoria no mês (mesma regra de agregação do dashboard) |
+| `remainingAmount` | `number` | `limitAmount - spentAmount` (pode ser negativo se excedido) |
+| `percentage` | `number` | `(spentAmount / limitAmount) * 100`, 2 casas decimais |
+| `status` | `string` | `OK` se percentage ≤ 70%; `WARNING` se > 70% e ≤ 100%; `EXCEEDED` se > 100% |
+| `version` | `integer` | Versão para optimistic locking |
+
+**Regras de cálculo de `spentAmount`:** aplica as mesmas regras de agregação do dashboard
+(parcelas pelo `installment.reference_month`, demais pelo `transaction.date`).
+Considera apenas transações do tipo `EXPENSE` para a categoria e mês informados.
+
+**Regras de status:**
+- `OK`: percentage ≤ 70%
+- `WARNING`: percentage > 70% e ≤ 100%
+- `EXCEEDED`: percentage > 100%
+
+---
+
+### GET /api/budgets
+
+Lista todos os orçamentos do mês consultado, com o gasto real calculado.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Query params:**
+
+| Param   | Tipo      | Obrigatório | Descrição |
+|---------|-----------|-------------|-----------|
+| `month` | `yyyy-MM` | sim         | Mês a consultar (ex.: `2026-05`) |
+
+**Response 200:** array de `BudgetResponse` (pode ser `[]`), ordenado por `categoryName` ascendente.
+
+| Status | Situação |
+|--------|----------|
+| 200 | Lista retornada (pode ser `[]`) |
+| 400 | `month` ausente — "Parâmetro 'month' é obrigatório no formato yyyy-MM." |
+| 400 | `month` em formato inválido — "Formato de mês inválido. Use yyyy-MM (ex.: 2026-05)." |
+| 401 | Token ausente ou inválido |
+
+---
+
+### POST /api/budgets
+
+Cria um novo orçamento para uma categoria em um mês específico.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "categoryId":  "uuid (obrigatório)",
+  "month":       "string yyyy-MM (obrigatório)",
+  "limitAmount": "number > 0 (obrigatório)"
+}
+```
+
+**Validações:**
+- `categoryId`: deve existir e estar ativa; categoria deve ser do tipo `EXPENSE` ou `BOTH`
+  (não faz sentido orçar receitas)
+- `month`: formato `yyyy-MM`; internamente armazenado como `yyyy-MM-01`
+- `limitAmount`: deve ser maior que zero
+- Unicidade: não pode existir outro `Budget` com o mesmo `categoryId` e `month`
+
+**Response 201:** `BudgetResponse` completo (com `spentAmount` calculado).
+
+| Status | Situação |
+|--------|----------|
+| 201 | Orçamento criado com sucesso |
+| 400 | Campo inválido — mensagens específicas (ver abaixo) |
+| 401 | Token ausente ou inválido |
+| 404 | `categoryId` não encontrado ou inativo — "Categoria não encontrada." |
+| 409 | Já existe orçamento para esta categoria neste mês — "Já existe um orçamento para esta categoria neste mês." |
+| 422 | Categoria não é do tipo EXPENSE ou BOTH — "Orçamentos só podem ser criados para categorias de despesa." |
+
+**Mensagens de erro por campo:**
+- `categoryId` nulo: `"Categoria é obrigatória."`
+- `month` nulo ou inválido: `"Mês é obrigatório no formato yyyy-MM."`
+- `limitAmount` nulo: `"Limite é obrigatório."`
+- `limitAmount` ≤ 0: `"O limite deve ser maior que zero."`
+
+---
+
+### PUT /api/budgets/{id}
+
+Atualiza o limite de um orçamento existente. Suporta optimistic locking.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do orçamento
+
+**Request:**
+```json
+{
+  "limitAmount": "number > 0 (obrigatório)",
+  "version":     "integer (obrigatório — optimistic locking)"
+}
+```
+
+> Nota: `categoryId` e `month` não são editáveis. Para trocar categoria ou mês, exclua
+> e recrie o orçamento.
+
+**Response 200:** `BudgetResponse` atualizado (com `spentAmount` recalculado).
+
+| Status | Situação |
+|--------|----------|
+| 200 | Orçamento atualizado com sucesso |
+| 400 | `limitAmount` ≤ 0 — "O limite deve ser maior que zero." |
+| 400 | `version` ausente — "Campo 'version' é obrigatório para atualização." |
+| 401 | Token ausente ou inválido |
+| 404 | Orçamento não encontrado — "Orçamento não encontrado." |
+| 409 | Conflito de versão — "O registro foi alterado por outro usuário. Recarregue e tente novamente." |
+
+---
+
+### DELETE /api/budgets/{id}
+
+Remove permanentemente um orçamento. Não afeta lançamentos existentes.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID do orçamento
+
+**Response 204:** sem body
+
+| Status | Situação |
+|--------|----------|
+| 204 | Orçamento removido com sucesso |
+| 401 | Token ausente ou inválido |
+| 404 | Orçamento não encontrado — "Orçamento não encontrado." |
 
 ---
 
@@ -848,3 +1129,6 @@ Endpoints previstos:
 | 7 | `PUT /api/transactions/{id}` para parcelados | Comportamento indefinido antes do Sprint 04 | DEFINIDO — retorna 422; lançamentos parcelados não editáveis individualmente | 04 |
 | 8 | `TransactionResponse.cardId` → expandir para objeto `card` | Frontend precisa do nome do cartão na lista | Backend Sprint 04 — ajustar DTO de resposta | 04 |
 | 9 | `closing_day` >= 29 em meses curtos (fev) | Possível confusão no cálculo de reference_month | DOCUMENTADO — algoritmo correto; purchaseDate.dayOfMonth nunca excede 28 em fev | 04 |
+| 10 | Lançamentos recorrentes (RecurringRule) | Movido para Sprint 06 | API a detalhar no planning do Sprint 06 | 06 |
+| 11 | `incomeVariation`/`expenseVariation` quando mês anterior = 0 | Divisão por zero | DEFINIDO — retornar `null`; frontend não exibe variação | 05 |
+| 12 | `spentAmount` em Budget usa mesma regra de agregação do dashboard | Consistência parcelas vs à vista | DEFINIDO — sim, mesma lógica do dashboard (installment.reference_month) | 05 |
