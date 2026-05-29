@@ -3,7 +3,7 @@
 **Epic:** Cartões e Parcelamento (parte 2)
 **Fatia:** 3b
 **Objetivo:** Gerar parcelas automaticamente ao criar compra parcelada; exibir badges na lista.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🔵 EM ANDAMENTO
 
 ---
 
@@ -64,11 +64,25 @@ DIA 9–10 (fechamento)
 
 ---
 
+## Observações técnicas
+
+- **DBA:** nenhuma migration nova necessária. Índices em `installment.reference_month`
+  e `installment.transaction_id` já existem em V2__initial_schema.sql.
+  ON DELETE CASCADE em `installment.transaction_id` também já está em V2.
+- **Backend:** `TransactionService.create()` lança exceção placeholder para `installmentsTotal > 1`;
+  remover o placeholder e implementar chamada a `InstallmentService.generateInstallments()`.
+- **Backend:** ajustar `TransactionResponse` para incluir objeto `card` (id + name) em vez
+  de apenas `cardId` (UUID simples). Ver ponto #8 na tabela de pontos em aberto do api.md.
+- **Contrato canônico:** algoritmo de reference_month documentado em
+  `memory/decisions/2026-05-28-installment-reference-month-algorithm.md`.
+
+---
+
 ## Progresso diário
 
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
-| 1 | — | — | — |
+| 1 | 2026-05-28 | Planning concluído; contrato da API Fatia 3b definido; decisão de algoritmo registrada | — |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
