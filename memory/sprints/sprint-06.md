@@ -3,7 +3,7 @@
 **Epic:** Recorrência + Acerto de Contas
 **Fatias:** 5b e 6
 **Objetivo:** Lançamentos recorrentes automáticos e cálculo completo do acerto de contas com proporção dinâmica.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🟢 EM ANDAMENTO — backends concluídos, frontends em progresso
 
 ---
 
@@ -36,67 +36,69 @@ DIA 9–10 (fechamento)
 ## Backlog do sprint
 
 ### S-06-01 · API de lançamentos recorrentes
-**Papel:** Backend | **Pontos:** 5 | **Status:** `PENDENTE`
+**Papel:** Backend | **Pontos:** 5 | **Status:** `✅ CONCLUÍDO` | **Branch:** `feature/s06-backend-recurring`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Entidade RecurringRule + RecurringRuleRepository | Backend | PENDENTE |
-| RecurringRuleService (criar, listar, desativar) | Backend | PENDENTE |
-| Job agendado @Scheduled para gerar lançamentos na data certa | Backend | PENDENTE |
-| Garantir idempotência (não duplicar se job rodar 2x no mesmo dia) | Backend | PENDENTE |
-| Endpoints GET/POST/DELETE /api/recurring-rules | Backend | PENDENTE |
-| Testes do job (geração na data, sem duplicar) | QA | PENDENTE |
+| Entidade RecurringRule + RecurringRuleRepository | Backend | ✅ |
+| RecurringRuleService (criar, listar, desativar) | Backend | ✅ |
+| Job agendado @Scheduled para gerar lançamentos na data certa | Backend | ✅ |
+| Garantir idempotência (não duplicar se job rodar 2x no mesmo dia) | Backend | ✅ |
+| Endpoints GET/POST/DELETE /api/recurring-rules | Backend | ✅ |
+| Testes do job (geração na data, sem duplicar) | QA | 🟡 integração @Disabled aguarda merge |
 
 ---
 
 ### S-06-02 · Tela de recorrências
-**Papel:** Frontend | **Pontos:** 3 | **Depende de:** S-06-01 | **Status:** `PENDENTE`
+**Papel:** Frontend | **Pontos:** 3 | **Depende de:** S-06-01 | **Status:** `🟡 EM PROGRESSO` | **Branch:** `feature/s06-frontend-recurring`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Módulo de recorrências com lista | Frontend | PENDENTE |
-| Formulário de criação (frequência, template do lançamento) | Frontend | PENDENTE |
-| Ação de desativar recorrência | Frontend | PENDENTE |
+| Módulo de recorrências com lista | Frontend | 🟡 |
+| Formulário de criação (frequência, template do lançamento) | Frontend | 🟡 |
+| Ação de desativar recorrência | Frontend | 🟡 |
 
 ---
 
 ### S-06-03 · API de acerto de contas
-**Papel:** Backend | **Pontos:** 8 | **Depende de:** S-04-01 | **Status:** `PENDENTE`
-
-> ⚠️ Esta é a story mais complexa do projeto. Requer atenção redobrada e revisão.
+**Papel:** Backend | **Pontos:** 8 | **Depende de:** S-04-01 | **Status:** `✅ CONCLUÍDO` | **Branch:** `feature/s06-backend-settlement`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| SettlementService.calculate(month) | Backend | PENDENTE |
-| Agregar Installments do mês + lançamentos à vista | Backend | PENDENTE |
-| Lógica FIFTY_FIFTY: split 50/50 de cada despesa | Backend | PENDENTE |
-| Lógica PERSON_A / PERSON_B: 100% para a pessoa | Backend | PENDENTE |
-| Lógica PROPORTIONAL: buscar receitas PERSON_A/B do mês | Backend | PENDENTE |
-| PROPORTIONAL: calcular proporção (ex: 6000/10000 = 60%) | Backend | PENDENTE |
-| PROPORTIONAL: mês sem receita → pending: true (não calcular) | Backend | PENDENTE |
-| Resultado final: { debtor, creditor, amount } ou { settled: true } | Backend | PENDENTE |
-| Endpoint GET /api/settlement?month=yyyy-MM | Backend | PENDENTE |
-| Decidir comportamento de mês já acertado → memory/decisions/ | Arquiteto | PENDENTE |
-| Teste: 50/50 simples | QA | PENDENTE |
-| Teste: proporcional com receitas lançadas | QA | PENDENTE |
-| Teste: proporcional sem receita individual → pending | QA | PENDENTE |
-| Teste: só de uma pessoa (PERSON_A) | QA | PENDENTE |
-| Teste: mês com parcelas de compras anteriores | QA | PENDENTE |
-| Teste: acerto zerado (cada um pagou exatamente o que devia) | QA | PENDENTE |
+| SettlementService.calculate(YearMonth) | Backend | ✅ |
+| Agregar Installments do mês + lançamentos à vista | Backend | ✅ |
+| Lógica FIFTY_FIFTY: split 50/50 de cada despesa | Backend | ✅ |
+| Lógica PERSON_A / PERSON_B: 100% para a pessoa | Backend | ✅ |
+| Lógica PROPORTIONAL: buscar receitas PERSON_A/B do mês | Backend | ✅ |
+| PROPORTIONAL: calcular proporção (ex: 6000/10000 = 60%) | Backend | ✅ |
+| PROPORTIONAL: mês sem receita → pendingProportional: true | Backend | ✅ |
+| Resultado final: debtor/creditor/amountOwed ou settled=true | Backend | ✅ |
+| Endpoint GET /api/settlement?month=yyyy-MM | Backend | ✅ |
+| Decidir comportamento de mês já acertado → memory/decisions/ | Arquiteto | ✅ Opção A (stateless) |
+| Teste TC-S01: FIFTY_FIFTY simples | QA | ✅ |
+| Teste TC-S02: PERSON_A (settled) | QA | ✅ |
+| Teste TC-S03: PERSON_B (settled) | QA | ✅ |
+| Teste TC-S04: PROPORTIONAL com receitas | QA | ✅ |
+| Teste TC-S05: PROPORTIONAL sem receita → pending | QA | ✅ |
+| Teste TC-S06: MIX FIFTY_FIFTY + PROPORTIONAL sem receita | QA | ✅ |
+| Teste TC-S07: mês sem despesas | QA | ✅ |
+| Teste TC-S08: parcela de cartão no acerto | QA | ✅ |
+| Teste TC-S09: receita FIFTY_FIFTY excluída da proporção | QA | ✅ |
+| Teste TC-S10: arredondamento HALF_UP | QA | ✅ |
 
 ---
 
 ### S-06-04 · Tela de acerto de contas
-**Papel:** Frontend | **Pontos:** 5 | **Depende de:** S-06-03 | **Status:** `PENDENTE`
+**Papel:** Frontend | **Pontos:** 5 | **Depende de:** S-06-03 | **Status:** `🟡 EM PROGRESSO` | **Branch:** `feature/s06-frontend-settlement`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Módulo settlement com layout de acerto | Frontend | PENDENTE |
-| Exibição de "X deve R$ Y a Z" com destaque visual | Frontend | PENDENTE |
-| Alerta de proporção pendente ("Cadastre as receitas de [mês]") | Frontend | PENDENTE |
-| Breakdown por pessoa: pagou vs. deveria pagar | Frontend | PENDENTE |
-| Navegação por mês | Frontend | PENDENTE |
-| Serviço HTTP SettlementService | Frontend | PENDENTE |
+| Módulo settlement com layout de acerto | Frontend | 🟡 |
+| Exibição de "X deve R$ Y a Z" com destaque visual | Frontend | 🟡 |
+| Alerta de proporção pendente ("Cadastre as receitas de [mês]") | Frontend | 🟡 |
+| Breakdown por pessoa: pagou vs. deveria pagar | Frontend | 🟡 |
+| Navegação por mês | Frontend | 🟡 |
+| Serviço HTTP SettlementService | Frontend | 🟡 |
 
 ---
 
