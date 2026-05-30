@@ -238,7 +238,7 @@ import {
             </div>
             <span class="shortcut-card__label">Cartões</span>
           </a>
-          <a class="shortcut-card shortcut-card--disabled">
+          <a routerLink="/settlement" class="shortcut-card">
             <div class="shortcut-card__icon shortcut-card__icon--sand">
               <mat-icon>handshake</mat-icon>
             </div>

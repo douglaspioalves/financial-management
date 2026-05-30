@@ -31,5 +31,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./budget/budget.routes').then(m => m.budgetRoutes),
   },
+  {
+    path: 'settlement',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./settlement/settlement.routes').then(m => m.settlementRoutes),
+  },
   { path: '**', redirectTo: '/dashboard' },
 ];
