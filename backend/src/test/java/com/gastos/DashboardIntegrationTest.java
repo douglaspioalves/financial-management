@@ -8,7 +8,6 @@ import com.gastos.repository.CardRepository;
 import com.gastos.repository.CategoryRepository;
 import com.gastos.repository.PersonRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -55,7 +54,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled("Aguardando merge de feature/s05-backend-dashboard")
 class DashboardIntegrationTest {
 
     @Autowired
@@ -177,8 +175,9 @@ class DashboardIntegrationTest {
                 .andExpect(jsonPath("$.balance").value(4000.00));
     }
 
-    // TC-D4: despesa parcelada (R$300, 3x, closingDay=15, data=10/05)
-    //        1a parcela em maio = R$100 -> dashboard de maio mostra 100, nao 300
+    // TC-D4: despesa parcelada (R$300, 3x, closingDay=15, data=10/07/2099)
+    //        1a parcela em 2099-07 = R$100 -> dashboard de 2099-07 mostra apenas 100
+    //        Usa mes futuro isolado para evitar interferencia de outros testes
     @Test @Order(4)
     @DisplayName("TC-D4: Compra parcelada — dashboard mostra apenas parcela do mes correto no totalExpense")
     void getDashboard_installmentPurchase_onlyCurrentMonthInstallmentInExpenseTotal() throws Exception {
@@ -191,30 +190,31 @@ class DashboardIntegrationTest {
                 .andExpect(status().isCreated()).andReturn();
         String cardId = objectMapper.readTree(cardResult.getResponse().getContentAsString()).get("id").asText();
 
-        // dia 10/05 < closingDay 15 -> 1a parcela = maio, 2a = junho, 3a = julho
-        criaTransacao("EXPENSE", "300.00", "2026-05-10",
+        // dia 10/07/2099 < closingDay 15 -> 1a parcela = 2099-07, 2a = 2099-08, 3a = 2099-09
+        criaTransacao("EXPENSE", "300.00", "2099-07-10",
                 expenseCategoryId, testPersonId, "CREDIT", cardId, "FIFTY_FIFTY", 3);
 
-        mockMvc.perform(get("/api/dashboard?month=2026-05")
+        mockMvc.perform(get("/api/dashboard?month=2099-07")
                         .header("Authorization", "Bearer " + obtainToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalExpense").value(100.00));
 
-        mockMvc.perform(get("/api/dashboard?month=2026-06")
+        mockMvc.perform(get("/api/dashboard?month=2099-08")
                         .header("Authorization", "Bearer " + obtainToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalExpense").value(100.00));
     }
 
     // TC-D5: previousMonth preenchido com dados do mes anterior
+    //        Usa meses futuros isolados (2099-10 e 2099-11) para evitar interferencia
     @Test @Order(5)
-    @DisplayName("TC-D5: Dashboard de maio inclui dados do mes anterior (abril) em previousMonth")
+    @DisplayName("TC-D5: Dashboard inclui dados do mes anterior em previousMonth")
     void getDashboard_compareWithPreviousMonth_previousMonthFilledCorrectly() throws Exception {
-        criaTransacao("EXPENSE", "800.00", "2026-04-10",
+        criaTransacao("EXPENSE", "800.00", "2099-10-10",
                 expenseCategoryId, testPersonId, "CASH", null, "FIFTY_FIFTY", null);
-        criaTransacao("EXPENSE", "600.00", "2026-05-10",
+        criaTransacao("EXPENSE", "600.00", "2099-11-10",
                 expenseCategoryId, testPersonId, "CASH", null, "FIFTY_FIFTY", null);
-        mockMvc.perform(get("/api/dashboard?month=2026-05")
+        mockMvc.perform(get("/api/dashboard?month=2099-11")
                         .header("Authorization", "Bearer " + obtainToken()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalExpense").value(600.00))
