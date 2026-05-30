@@ -40,6 +40,13 @@
   <!-- Conteúdo -->
   <div class="recurring-content">
 
+    @if (loading()) {
+      <div class="loading-center">
+        <mat-spinner diameter="48"></mat-spinner>
+        <p class="loading-text">Carregando regras recorrentes...</p>
+      </div>
+    }
+
     @if (!loading() && rules().length === 0) {
       <!-- Empty state -->
       <div class="empty-state">

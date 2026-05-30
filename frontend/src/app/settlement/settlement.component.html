@@ -39,6 +39,30 @@
       </button>
     </div>
 
+    @if (loading()) {
+      <!-- Skeleton de carregamento -->
+      <div class="loading-skeleton">
+        <div class="skeleton-card">
+          <div class="skeleton skeleton--text-sm"></div>
+          <div class="skeleton skeleton--amount-lg"></div>
+        </div>
+        <div class="skeleton-persons-grid">
+          <div class="skeleton-card">
+            <div class="skeleton skeleton--title"></div>
+            <div class="skeleton skeleton--text-sm"></div>
+            <div class="skeleton skeleton--text-sm"></div>
+            <div class="skeleton skeleton--text-md"></div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton skeleton--title"></div>
+            <div class="skeleton skeleton--text-sm"></div>
+            <div class="skeleton skeleton--text-sm"></div>
+            <div class="skeleton skeleton--text-md"></div>
+          </div>
+        </div>
+      </div>
+    }
+
     @if (!loading() && data()) {
 
       <!-- ===== CARD PRINCIPAL — RESUMO ===== -->

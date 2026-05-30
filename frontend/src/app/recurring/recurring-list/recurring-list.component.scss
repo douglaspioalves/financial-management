@@ -420,3 +420,38 @@
     padding: 28px 24px 16px;
   }
 }
+
+// ─── Loading center ───────────────────────────────────────────────────────────
+.loading-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 0;
+  gap: 20px;
+}
+
+.loading-text {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+// ─── Responsividade 375px ────────────────────────────────────────────────────
+@media (max-width: 375px) {
+  .page-title {
+    font-size: 1.2rem;
+  }
+
+  .page-title-row {
+    padding: 16px 12px 12px;
+  }
+
+  .recurring-content {
+    padding: 0 12px;
+  }
+
+  .rule-card__amount {
+    font-size: 1.15rem;
+  }
+}
