@@ -3,7 +3,7 @@
 **Epic:** Exportação e Qualidade Final
 **Fatia:** 7
 **Objetivo:** Exportação de dados, polimento de UX, testes de ponta a ponta e release v1.0.0.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🟢 EM ANDAMENTO — 2026-05-30
 
 ---
 
