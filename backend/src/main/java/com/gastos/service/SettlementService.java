@@ -51,7 +51,7 @@ public class SettlementService {
         LocalDate end = month.atEndOfMonth();
 
         // Busca as duas pessoas (ordem determinística: pelo nome)
-        List<Person> persons = personRepository.findAll();
+        List<Person> persons = new java.util.ArrayList<>(personRepository.findAll());
         if (persons.size() < 2) {
             throw new IllegalStateException("O sistema requer exatamente duas pessoas cadastradas.");
         }
