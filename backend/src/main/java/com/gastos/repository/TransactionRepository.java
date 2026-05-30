@@ -43,19 +43,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
                                          @Param("end") LocalDate end);
 
     /**
-     * Retorna receitas individuais do mês — type=INCOME com splitRule PERSON_A ou PERSON_B.
-     * Usadas no cálculo da proporção do acerto de contas (receitas FIFTY_FIFTY excluídas).
-     */
-    @Query("SELECT t FROM Transaction t " +
-           "JOIN FETCH t.category " +
-           "JOIN FETCH t.paidByPerson " +
-           "WHERE t.type = 'INCOME' " +
-           "AND (t.splitRule = 'PERSON_A' OR t.splitRule = 'PERSON_B') " +
-           "AND t.date BETWEEN :start AND :end")
-    List<Transaction> findIndividualIncomesByMonth(@Param("start") LocalDate start,
-                                                   @Param("end") LocalDate end);
-
-    /**
      * Retorna as N transações mais recentes do mês (para recentTransactions no dashboard).
      * Inclui receitas e despesas, ordenadas por date DESC depois por createdAt DESC.
      * Carrega category e paidByPerson via JOIN FETCH para evitar N+1.
