@@ -16,8 +16,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatMenuModule } from '@angular/material/menu';
 import { TransactionService } from '../../core/services/transaction.service';
 import { InstallmentService } from '../services/installment.service';
+import { ExportService } from '../../core/services/export.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import {
   Transaction,
@@ -44,6 +46,7 @@ import { TransactionFormComponent } from '../transaction-form/transaction-form.c
     MatSnackBarModule,
     MatExpansionModule,
     MatChipsModule,
+    MatMenuModule,
   ],
   templateUrl: './transaction-list.component.html',
   styleUrl: './transaction-list.component.scss',
@@ -51,13 +54,15 @@ import { TransactionFormComponent } from '../transaction-form/transaction-form.c
 export class TransactionListComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private installmentService = inject(InstallmentService);
+  private exportService = inject(ExportService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
   protected theme = inject(ThemeService);
 
   private currentDate = signal(new Date());
 
-  protected loading = signal(false);
+  protected loading = signal(true);
+  protected exporting = signal(false);
   protected transactions = signal<Transaction[]>([]);
 
   // Mapa de id da transação -> lista de parcelas carregadas
@@ -120,7 +125,7 @@ export class TransactionListComponent implements OnInit {
     ref.afterClosed().subscribe((saved: boolean) => {
       if (saved) {
         this.loadTransactions();
-        this.snackBar.open('Lancamento criado com sucesso!', 'Fechar', {
+        this.snackBar.open('Lançamento criado com sucesso!', 'Fechar', {
           duration: 3000,
           panelClass: 'snack--success',
         });
@@ -139,7 +144,7 @@ export class TransactionListComponent implements OnInit {
     ref.afterClosed().subscribe((saved: boolean) => {
       if (saved) {
         this.loadTransactions();
-        this.snackBar.open('Lancamento atualizado!', 'Fechar', {
+        this.snackBar.open('Lançamento atualizado!', 'Fechar', {
           duration: 3000,
           panelClass: 'snack--success',
         });
@@ -158,19 +163,45 @@ export class TransactionListComponent implements OnInit {
       this.transactionService.deleteTransaction(tx.id).subscribe({
         next: () => {
           this.loadTransactions();
-          this.snackBar.open('Lancamento excluido.', 'Fechar', {
+          this.snackBar.open('Lançamento excluído.', 'Fechar', {
             duration: 3000,
           });
         },
         error: (err: { error?: { message?: string } }) => {
           const message =
-            err?.error?.message ?? 'Erro ao excluir lancamento. Tente novamente.';
+            err?.error?.message ?? 'Erro ao excluir lançamento. Tente novamente.';
           this.snackBar.open(message, 'Fechar', {
             duration: 4000,
             panelClass: 'snack--error',
           });
         },
       });
+    });
+  }
+
+  protected exportData(format: 'csv' | 'xlsx'): void {
+    if (this.exporting()) return;
+    this.exporting.set(true);
+    const month = this.currentMonth();
+
+    this.exportService.exportFile(month, format).subscribe({
+      next: (blob: Blob) => {
+        this.exportService.triggerDownload(blob, month, format);
+        this.exporting.set(false);
+        this.snackBar.open('Exportação concluída!', 'Fechar', {
+          duration: 3000,
+          panelClass: 'snack--success',
+        });
+      },
+      error: (err: { error?: { message?: string } }) => {
+        this.exporting.set(false);
+        const message =
+          err?.error?.message ?? 'Erro ao exportar. Tente novamente.';
+        this.snackBar.open(message, 'Fechar', {
+          duration: 4000,
+          panelClass: 'snack--error',
+        });
+      },
     });
   }
 
@@ -258,10 +289,10 @@ export class TransactionListComponent implements OnInit {
   protected paymentMethodLabel(method: PaymentMethod): string {
     const labels: Record<PaymentMethod, string> = {
       CASH: 'Dinheiro',
-      DEBIT: 'Debito',
-      CREDIT: 'Credito',
+      DEBIT: 'Débito',
+      CREDIT: 'Crédito',
       PIX: 'Pix',
-      TRANSFER: 'Transferencia',
+      TRANSFER: 'Transferência',
     };
     return labels[method] ?? method;
   }
@@ -269,8 +300,8 @@ export class TransactionListComponent implements OnInit {
   protected splitRuleLabel(rule: SplitRule): string {
     const labels: Record<SplitRule, string> = {
       FIFTY_FIFTY: '50/50',
-      PERSON_A: 'So A',
-      PERSON_B: 'So B',
+      PERSON_A: 'Só A',
+      PERSON_B: 'Só B',
       PROPORTIONAL: 'Proporcional',
     };
     return labels[rule] ?? rule;
@@ -289,7 +320,7 @@ export class TransactionListComponent implements OnInit {
       error: (err: { error?: { message?: string } }) => {
         this.loading.set(false);
         const message =
-          err?.error?.message ?? 'Erro ao carregar lancamentos. Tente novamente.';
+          err?.error?.message ?? 'Erro ao carregar lançamentos. Tente novamente.';
         this.snackBar.open(message, 'Fechar', {
           duration: 4000,
           panelClass: 'snack--error',
