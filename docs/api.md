@@ -1109,10 +1109,237 @@ Remove permanentemente um orçamento. Não afeta lançamentos existentes.
 
 ---
 
-## Fatia 6 — Acerto de Contas (Sprint 07 — a detalhar)
+## Fatia 6a — Acerto de Contas (Sprint 06)
 
-Endpoints previstos:
-- `GET /api/settlement?month=yyyy-MM`
+> Contrato fechado em 2026-05-30. Nenhuma migration nova necessária.
+
+---
+
+### GET /api/settlement
+
+Calcula o acerto de contas do mês: quanto cada pessoa pagou, quanto deveria pagar e quem deve quanto a quem.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Query params:**
+
+| Param   | Tipo      | Obrigatório | Descrição |
+|---------|-----------|-------------|-----------|
+| `month` | `yyyy-MM` | não         | Mês consultado; padrão: mês corrente |
+
+**Response 200:**
+```json
+{
+  "month":               "2026-05-01",
+  "totalExpense":        900.00,
+  "personA": {
+    "id":          "uuid",
+    "name":        "Alice",
+    "totalPaid":   900.00,
+    "shouldPay":   450.00,
+    "balance":     450.00
+  },
+  "personB": {
+    "id":          "uuid",
+    "name":        "Bob",
+    "totalPaid":   0.00,
+    "shouldPay":   450.00,
+    "balance":    -450.00
+  },
+  "debtor":              "PERSON_B",
+  "creditor":            "PERSON_A",
+  "amountOwed":          450.00,
+  "settled":             false,
+  "pendingProportional": false,
+  "pendingMessage":      null
+}
+```
+
+**Campos:**
+
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| `month` | `string yyyy-MM-dd` | Primeiro dia do mês consultado |
+| `totalExpense` | `number` | Total de despesas computadas no mês |
+| `personA` | `object` | Pessoa com menor nome alfabético |
+| `personB` | `object` | Pessoa com maior nome alfabético |
+| `personA/B.totalPaid` | `number` | Quanto a pessoa pagou no mês |
+| `personA/B.shouldPay` | `number` | Quanto a pessoa deveria pagar conforme regras de divisão |
+| `personA/B.balance` | `number` | `totalPaid - shouldPay`; positivo = credor, negativo = devedor |
+| `debtor` | `"PERSON_A" \| "PERSON_B" \| null` | Quem deve pagar; `null` se quitado ou pendente |
+| `creditor` | `"PERSON_A" \| "PERSON_B" \| null` | Quem deve receber; `null` se quitado ou pendente |
+| `amountOwed` | `number \| null` | Valor da dívida; `null` se `settled=true` ou `pendingProportional=true` |
+| `settled` | `boolean` | `true` se o saldo é menor que R$ 0,01 |
+| `pendingProportional` | `boolean` | `true` se há despesas PROPORTIONAL sem receitas individuais cadastradas |
+| `pendingMessage` | `string \| null` | Mensagem em pt-br orientando o usuário; `null` se sem pendência |
+
+**Regras de cálculo:**
+
+- Entram no acerto as `Installment` cujo `reference_month` é o mês consultado, mais lançamentos à vista do mês.
+- `FIFTY_FIFTY`: 50% para cada pessoa.
+- `PERSON_A` / `PERSON_B`: 100% da despesa atribuída à pessoa indicada.
+- `PROPORTIONAL`: proporcional às receitas individuais (`split_rule=PERSON_A/B`, `type=INCOME`) do mês. Se não houver receita individual cadastrada → `pendingProportional=true`, `amountOwed=null`.
+- Ordenação de personA/personB: sempre pelo nome, ordem alfabética ascendente.
+
+| Status | Situação |
+|--------|----------|
+| 200 | Acerto calculado com sucesso |
+| 400 | `month` em formato inválido — "Formato de mês inválido. Use yyyy-MM (ex.: 2026-05)." |
+| 401 | Token ausente ou inválido |
+
+---
+
+## Fatia 6b — Lançamentos Recorrentes (Sprint 06)
+
+> Contrato fechado em 2026-05-30. Migration `V9__recurring_rules.sql` já aplicada.
+
+---
+
+### GET /api/recurring-rules
+
+Lista todas as regras de lançamento recorrente ativas, ordenadas por `created_at` ascendente.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response 200:**
+```json
+[
+  {
+    "id":               "uuid",
+    "type":             "EXPENSE | INCOME",
+    "amount":           500.00,
+    "description":      "Aluguel",
+    "categoryId":       "uuid",
+    "categoryName":     "Moradia",
+    "paidByPersonId":   "uuid",
+    "paidByPersonName": "Alice",
+    "paymentMethod":    "TRANSFER",
+    "splitRule":        "FIFTY_FIFTY",
+    "frequency":        "MONTHLY",
+    "nextDate":         "2026-06-01",
+    "active":           true,
+    "createdAt":        "2026-05-30T10:00:00",
+    "version":          0
+  }
+]
+```
+
+| Status | Situação |
+|--------|----------|
+| 200 | Lista retornada (pode ser `[]`) |
+| 401 | Token ausente ou inválido |
+
+---
+
+### POST /api/recurring-rules
+
+Cria uma nova regra de lançamento recorrente.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "type":            "EXPENSE | INCOME (obrigatório)",
+  "amount":          "number > 0 (obrigatório)",
+  "description":     "string 1–255 chars (obrigatório)",
+  "categoryId":      "uuid (obrigatório)",
+  "paidByPersonId":  "uuid (obrigatório)",
+  "paymentMethod":   "CASH | DEBIT | CREDIT | PIX | TRANSFER (obrigatório)",
+  "splitRule":       "PERSON_A | PERSON_B | FIFTY_FIFTY | PROPORTIONAL (obrigatório)",
+  "frequency":       "MONTHLY (obrigatório)",
+  "startDate":       "string yyyy-MM-dd (obrigatório — primeira data de geração)"
+}
+```
+
+**Validações:**
+- `description` não pode ser nulo ou vazio (obrigatório para garantir idempotência do job)
+- `amount` deve ser maior que zero
+- `frequency` suporta apenas `MONTHLY` nesta versão
+
+**Response 201:** mesmo formato do `GET /api/recurring-rules` (item único).
+
+| Status | Situação |
+|--------|----------|
+| 201 | Regra criada com sucesso |
+| 400 | Campo inválido — mensagens específicas |
+| 401 | Token ausente ou inválido |
+| 404 | `categoryId` ou `paidByPersonId` não encontrado |
+
+---
+
+### DELETE /api/recurring-rules/{id}
+
+Desativa uma regra recorrente (soft delete — `active=false`). Lançamentos já gerados não são removidos.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Path param:** `id` — UUID da regra
+
+**Response 204:** sem body
+
+| Status | Situação |
+|--------|----------|
+| 204 | Regra desativada com sucesso |
+| 401 | Token ausente ou inválido |
+| 404 | Regra não encontrada — "Regra recorrente não encontrada." |
+
+---
+
+## Fatia 7 — Exportação (Sprint 07)
+
+> Contrato fechado em 2026-05-30. Nenhuma migration necessária.
+
+---
+
+### GET /api/export
+
+Exporta todos os lançamentos do mês em formato CSV ou XLSX para download no browser.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Query params:**
+
+| Param    | Tipo      | Obrigatório | Descrição |
+|----------|-----------|-------------|-----------|
+| `month`  | `yyyy-MM` | não         | Mês a exportar; padrão: mês corrente |
+| `format` | `string`  | sim         | `csv` ou `xlsx` |
+
+**Response 200 — CSV (`format=csv`):**
+- `Content-Type: text/csv;charset=UTF-8`
+- `Content-Disposition: attachment; filename="gastos-2026-05.csv"`
+- Body: arquivo CSV com BOM UTF-8, separador vírgula, primeira linha com cabeçalho
+
+**Response 200 — XLSX (`format=xlsx`):**
+- `Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`
+- `Content-Disposition: attachment; filename="gastos-2026-05.xlsx"`
+- Body: arquivo XLSX com cabeçalho em negrito e fundo cinza
+
+**Colunas do arquivo (em pt-br):**
+
+| # | Coluna | Tipo | Descrição |
+|---|--------|------|-----------|
+| 1 | Data | `yyyy-MM-dd` | Data efetiva (da transação ou da parcela) |
+| 2 | Descrição | `string` | Descrição do lançamento |
+| 3 | Categoria | `string` | Nome da categoria |
+| 4 | Quem Pagou | `string` | Nome de quem realizou o pagamento |
+| 5 | Tipo | `Receita` \| `Despesa` | Tipo do lançamento em pt-br |
+| 6 | Valor | `string decimal` | Valor com ponto decimal (ex.: `150.00`) |
+| 7 | Divisão | `50/50` \| `Pessoa A` \| `Pessoa B` \| `Proporcional` | Regra de divisão em pt-br |
+| 8 | Parcela | `N/M` \| `À vista` | Número da parcela (ex.: `1/3`) ou `À vista` |
+
+**Regras de inclusão:**
+- Despesas à vista (não parceladas): filtradas pela `transaction.date` no mês
+- Receitas: filtradas pela `transaction.date` no mês
+- Parcelas de despesas no cartão: filtradas pelo `installment.reference_month`
+- Ordenação: Data ASC, Descrição ASC
+
+| Status | Situação |
+|--------|----------|
+| 200 | Arquivo gerado e retornado para download |
+| 400 | `format` ausente ou inválido — "Formato inválido. Use 'csv' ou 'xlsx'." |
+| 400 | `month` em formato inválido |
+| 401 | Token ausente ou inválido |
 
 ---
 
