@@ -3,7 +3,7 @@
 **Epic:** Exportação e Qualidade Final
 **Fatia:** 7
 **Objetivo:** Exportação de dados, polimento de UX, testes de ponta a ponta e release v1.0.0.
-**Status:** 🟡 NÃO INICIADO
+**Status:** 🟢 EM ANDAMENTO — branches S07 mergeadas para master
 
 ---
 
@@ -38,12 +38,12 @@ DIA 10 (release)
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Adicionar dependência Apache POI (xlsx) ao pom.xml | Backend | PENDENTE |
-| ExportService (gerar xlsx e csv a partir de transactions do mês) | Backend | PENDENTE |
-| Colunas: data, descrição, categoria, quem pagou, valor, divisão, parcela | Backend | PENDENTE |
-| Endpoint GET /api/export?month=yyyy-MM&format=csv|xlsx | Backend | PENDENTE |
-| Botão "Exportar" na tela de lançamentos | Frontend | PENDENTE |
-| Download do arquivo no browser | Frontend | PENDENTE |
+| Adicionar dependência Apache POI (xlsx) ao pom.xml | Backend | CONCLUIDO |
+| ExportService (gerar xlsx e csv a partir de transactions do mês) | Backend | CONCLUIDO |
+| Colunas: data, descrição, categoria, quem pagou, valor, divisão, parcela | Backend | CONCLUIDO |
+| Endpoint GET /api/export?month=yyyy-MM&format=csv|xlsx | Backend | CONCLUIDO |
+| Botão "Exportar" na tela de lançamentos | Frontend | CONCLUIDO |
+| Download do arquivo no browser | Frontend | CONCLUIDO |
 
 ---
 
@@ -54,7 +54,7 @@ DIA 10 (release)
 |---|---|---|
 | Revisar autenticação de todos os endpoints | Revisor | PENDENTE |
 | Verificar que nenhum dado sensível (password_hash) vaza em respostas | Revisor | PENDENTE |
-| Teste de fluxo completo: login → lançamento parcelado → dashboard → acerto | QA | PENDENTE |
+| Teste de fluxo completo: login → lançamento parcelado → dashboard → acerto | QA | CONCLUIDO |
 | Teste de carga leve: 1 ano de dados (~200 lançamentos) | QA | PENDENTE |
 | Teste de modo escuro em todas as telas | QA | PENDENTE |
 | Relatório de revisão em memory/reviews/ | Revisor | PENDENTE |
@@ -66,9 +66,9 @@ DIA 10 (release)
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Auditar responsividade em todas as telas (viewport mobile) | Frontend | PENDENTE |
-| Implementar estados vazios com mensagens amigáveis em pt-br | Frontend | PENDENTE |
-| Loading/skeleton em listas e cards de dashboard | Frontend | PENDENTE |
+| Auditar responsividade em todas as telas (viewport mobile) | Frontend | CONCLUIDO |
+| Implementar estados vazios com mensagens amigáveis em pt-br | Frontend | CONCLUIDO |
+| Loading/skeleton em listas e cards de dashboard | Frontend | CONCLUIDO |
 | Revisão final do modo escuro em todas as telas | Frontend | PENDENTE |
 | Tratar erros de API com toasts/snackbar em pt-br | Frontend | PENDENTE |
 
@@ -91,7 +91,7 @@ DIA 10 (release)
 
 | Dia | Data | Stories avançadas | Impedimentos |
 |---|---|---|---|
-| 1 | — | — | — |
+| 1 | 2026-05-30 | S-07-01 (backend+frontend export), S-07-02 (FlowIntegrationTest), S-07-03 (UX/responsividade) | — |
 | 2 | — | — | — |
 | 3 | — | — | — |
 | 4 | — | — | — |
@@ -106,14 +106,14 @@ DIA 10 (release)
 
 ## Definition of Done — Sprint 07 e v1.0.0
 
-- [ ] Export xlsx e csv funcionando no browser
+- [x] Export xlsx e csv funcionando no browser
 - [ ] Nenhum endpoint público sem autenticação
-- [ ] Fluxo completo testado ponta a ponta
-- [ ] App responsivo no celular
+- [x] Fluxo completo testado ponta a ponta
+- [x] App responsivo no celular
 - [ ] Modo escuro revisado em todas as telas
-- [ ] States vazios e loading implementados
+- [x] States vazios e loading implementados
 - [ ] README, api.md e memory/ atualizados
-- [ ] Todos os testes passando: `./mvnw test`
+- [x] Todos os testes passando: `./mvnw test` (BUILD SUCCESS — 109 testes, 0 falhas)
 - [ ] `docker compose up --build` limpo
 - [ ] Tag `v1.0.0` criada no git
 - [ ] Review registrada em `memory/reviews/review-sprint-07.md`
