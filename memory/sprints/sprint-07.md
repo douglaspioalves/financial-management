@@ -3,7 +3,7 @@
 **Epic:** Exportação e Qualidade Final
 **Fatia:** 7
 **Objetivo:** Exportação de dados, polimento de UX, testes de ponta a ponta e release v1.0.0.
-**Status:** 🟢 EM ANDAMENTO — branches S07 mergeadas para master
+**Status:** 🟢 EM ANDAMENTO — branches S07 mergeadas para master; testes 129/129 (BUILD SUCCESS)
 
 ---
 
@@ -113,8 +113,8 @@ DIA 10 (release)
 - [ ] Modo escuro revisado em todas as telas
 - [x] States vazios e loading implementados
 - [ ] README, api.md e memory/ atualizados
-- [x] Todos os testes passando: `./mvnw test` (BUILD SUCCESS — 109 testes, 0 falhas)
-- [ ] `docker compose up --build` limpo
+- [x] Todos os testes passando: `./mvnw test` (BUILD SUCCESS — 129 testes, 0 falhas, 0 skipped)
+- [ ] `docker compose up --build` limpo (pendente: Docker daemon não disponível no sandbox)
 - [ ] Tag `v1.0.0` criada no git
 - [ ] Review registrada em `memory/reviews/review-sprint-07.md`
 - [ ] Retro FINAL registrada em `memory/retros/retro-sprint-07.md`
