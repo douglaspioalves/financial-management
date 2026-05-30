@@ -24,37 +24,30 @@ import org.mockito.quality.Strictness;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
  * Testes unitários do SettlementService — lógica de acerto de contas.
  *
- * Nomenclatura dos cenários:
- *   TC-S01 … TC-S10
+ * Nomenclatura dos cenários: TC-S01 … TC-S10
  *
- * PersonA = "Alice" (personAId)
- * PersonB = "Bob"   (personBId)
+ * PersonA = "Alice" (ordem alfabética → posição personA na response)
+ * PersonB = "Bob"
  *
- * Mês de referência padrão: maio/2026 (2026-05-01)
+ * Mês de referência padrão: maio/2026
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SettlementServiceTest {
 
-    @Mock
-    private TransactionRepository transactionRepository;
-
-    @Mock
-    private InstallmentRepository installmentRepository;
-
-    @Mock
-    private PersonRepository personRepository;
+    @Mock private TransactionRepository transactionRepository;
+    @Mock private InstallmentRepository installmentRepository;
+    @Mock private PersonRepository personRepository;
 
     @InjectMocks
     private SettlementService settlementService;
@@ -63,8 +56,13 @@ class SettlementServiceTest {
     // Fixtures
     // -------------------------------------------------------------------------
 
-    private static final LocalDate MAY_2026      = LocalDate.of(2026, 5, 1);
-    private static final LocalDate MAY_2026_END  = LocalDate.of(2026, 5, 31);
+    private static final YearMonth MAY_2026    = YearMonth.of(2026, 5);
+    private static final LocalDate MAY_START   = LocalDate.of(2026, 5,  1);
+    private static final LocalDate MAY_END     = LocalDate.of(2026, 5, 31);
+
+    private static final YearMonth FEB_2026    = YearMonth.of(2026, 2);
+    private static final LocalDate FEB_START   = LocalDate.of(2026, 2,  1);
+    private static final LocalDate FEB_END     = LocalDate.of(2026, 2, 28);
 
     private UUID personAId;
     private UUID personBId;
@@ -78,6 +76,7 @@ class SettlementServiceTest {
         personAId = UUID.randomUUID();
         personBId = UUID.randomUUID();
 
+        // "Alice" < "Bob" → serviço ordena alfabeticamente → Alice=personA, Bob=personB
         personA = Person.builder()
                 .id(personAId)
                 .name("Alice")
@@ -108,16 +107,14 @@ class SettlementServiceTest {
                 .version(0L)
                 .build();
 
-        // Stub padrão das duas pessoas
-        when(personRepository.findById(personAId)).thenReturn(Optional.of(personA));
-        when(personRepository.findById(personBId)).thenReturn(Optional.of(personB));
+        // Stub padrão: serviço chama findAll() e ordena por nome
+        when(personRepository.findAll()).thenReturn(List.of(personA, personB));
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
 
-    /** Cria uma Transaction de despesa à vista (não-parcelada). */
     private Transaction cashExpense(BigDecimal amount, SplitRule splitRule, Person paidBy) {
         return Transaction.builder()
                 .id(UUID.randomUUID())
@@ -133,7 +130,6 @@ class SettlementServiceTest {
                 .build();
     }
 
-    /** Cria uma Transaction de receita individual. */
     private Transaction income(BigDecimal amount, SplitRule splitRule, Person earnedBy) {
         return Transaction.builder()
                 .id(UUID.randomUUID())
@@ -149,13 +145,12 @@ class SettlementServiceTest {
                 .build();
     }
 
-    /** Cria uma Installment vinculada a uma Transaction de despesa parcelada. */
     private Installment installment(BigDecimal amount, SplitRule splitRule,
                                     Person paidBy, LocalDate referenceMonth) {
         Transaction tx = Transaction.builder()
                 .id(UUID.randomUUID())
                 .type(TransactionType.EXPENSE)
-                .amount(amount.multiply(BigDecimal.valueOf(3))) // valor total (3 parcelas)
+                .amount(amount.multiply(BigDecimal.valueOf(3)))
                 .date(LocalDate.of(2026, 1, 10))
                 .category(expenseCategory)
                 .paidByPerson(paidBy)
@@ -174,14 +169,10 @@ class SettlementServiceTest {
                 .build();
     }
 
-    /** Stub para mês sem parcelas de cartão e sem despesas à vista. */
-    private void stubNoExpenses() {
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026))
-                .thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of());
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of());
+    private void stubNoExpensesMay() {
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
     }
 
     // =========================================================================
@@ -189,18 +180,15 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S01: FIFTY_FIFTY — PersonA paga R$1000, PersonB paga R$0 → PersonB deve R$500")
+    @DisplayName("TC-S01: FIFTY_FIFTY — Alice paga R$1000, Bob deve R$500")
     void fiftyFifty_personAPaysFull_personBOwes500() {
-        // PersonA paga R$1000, despesa FIFTY_FIFTY (500 de cada)
         Transaction expense = cashExpense(new BigDecimal("1000.00"), SplitRule.FIFTY_FIFTY, personA);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of());
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.pendingProportional()).isFalse();
         assertThat(result.settled()).isFalse();
@@ -209,12 +197,10 @@ class SettlementServiceTest {
         assertThat(result.amountOwed()).isEqualByComparingTo("500.00");
         assertThat(result.totalExpense()).isEqualByComparingTo("1000.00");
 
-        // PersonA: pagou 1000, deveria 500 → saldo +500 (credora)
         assertThat(result.personA().totalPaid()).isEqualByComparingTo("1000.00");
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("500.00");
         assertThat(result.personA().balance()).isEqualByComparingTo("500.00");
 
-        // PersonB: pagou 0, deveria 500 → saldo -500 (devedora)
         assertThat(result.personB().totalPaid()).isEqualByComparingTo("0.00");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("500.00");
         assertThat(result.personB().balance()).isEqualByComparingTo("-500.00");
@@ -225,19 +211,15 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S02: PERSON_A — PersonA paga R$500, despesa 100% dela → settled=true, amountOwed=null")
+    @DisplayName("TC-S02: PERSON_A — Alice paga R$500, despesa 100% dela → settled=true")
     void personA_paysFull_isSettled() {
-        // Despesa PERSON_A: 100% é responsabilidade de PersonA
-        // PersonA pagou exatamente o que deveria
         Transaction expense = cashExpense(new BigDecimal("500.00"), SplitRule.PERSON_A, personA);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of());
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.settled()).isTrue();
         assertThat(result.pendingProportional()).isFalse();
@@ -245,12 +227,10 @@ class SettlementServiceTest {
         assertThat(result.debtor()).isNull();
         assertThat(result.creditor()).isNull();
 
-        // PersonA: pagou 500, deveria 500 → saldo 0
         assertThat(result.personA().totalPaid()).isEqualByComparingTo("500.00");
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("500.00");
         assertThat(result.personA().balance()).isEqualByComparingTo("0.00");
 
-        // PersonB: pagou 0, deveria 0 → saldo 0
         assertThat(result.personB().totalPaid()).isEqualByComparingTo("0.00");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("0.00");
     }
@@ -260,24 +240,20 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S03: PERSON_B — PersonB paga R$800, despesa 100% dela → settled=true")
+    @DisplayName("TC-S03: PERSON_B — Bob paga R$800, despesa 100% dele → settled=true")
     void personB_paysFull_isSettled() {
-        // Despesa PERSON_B: 100% responsabilidade de PersonB; PersonB pagou
         Transaction expense = cashExpense(new BigDecimal("800.00"), SplitRule.PERSON_B, personB);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of());
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.settled()).isTrue();
         assertThat(result.pendingProportional()).isFalse();
         assertThat(result.amountOwed()).isNull();
 
-        // PersonB: pagou 800, deveria 800 → quitado
         assertThat(result.personB().totalPaid()).isEqualByComparingTo("800.00");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("800.00");
         assertThat(result.personB().balance()).isEqualByComparingTo("0.00");
@@ -288,35 +264,29 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S04: PROPORTIONAL — IncomeA=R$6000 (60%), IncomeB=R$4000 (40%), despesa R$1000 paga por PersonA → PersonB deve R$400")
+    @DisplayName("TC-S04: PROPORTIONAL — IncomeA=R$6000 (60%), IncomeB=R$4000 (40%), despesa R$1000 → Bob deve R$400")
     void proportional_withIncomes_personBOwes400() {
-        // Receitas individuais: Alice 6000 (60%), Bob 4000 (40%)
         Transaction incomeA = income(new BigDecimal("6000.00"), SplitRule.PERSON_A, personA);
         Transaction incomeB = income(new BigDecimal("4000.00"), SplitRule.PERSON_B, personB);
+        Transaction expense  = cashExpense(new BigDecimal("1000.00"), SplitRule.PROPORTIONAL, personA);
 
-        // Despesa R$1000 PROPORTIONAL, paga por PersonA
-        Transaction expense = cashExpense(new BigDecimal("1000.00"), SplitRule.PROPORTIONAL, personA);
-
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        // findIndividualIncomesByMonth já filtra por PERSON_A/PERSON_B no banco
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END))
                 .thenReturn(List.of(incomeA, incomeB));
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.pendingProportional()).isFalse();
         assertThat(result.settled()).isFalse();
 
-        // PersonA deveria pagar 60% = R$600; PersonB 40% = R$400
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("600.00");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("400.00");
 
-        // PersonA pagou 1000, deveria 600 → balance +400 (credora)
         assertThat(result.personA().totalPaid()).isEqualByComparingTo("1000.00");
         assertThat(result.personA().balance()).isEqualByComparingTo("400.00");
 
-        // PersonB pagou 0, deveria 400 → deve R$400 a PersonA
         assertThat(result.debtor()).isEqualTo("PERSON_B");
         assertThat(result.creditor()).isEqualTo("PERSON_A");
         assertThat(result.amountOwed()).isEqualByComparingTo("400.00");
@@ -329,16 +299,13 @@ class SettlementServiceTest {
     @Test
     @DisplayName("TC-S05: PROPORTIONAL sem receitas individuais → pendingProportional=true, amountOwed=null")
     void proportional_noIndividualIncomes_returnsPending() {
-        // Sem receitas individuais no mês
         Transaction expense = cashExpense(new BigDecimal("500.00"), SplitRule.PROPORTIONAL, personA);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of()); // sem receitas
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.pendingProportional()).isTrue();
         assertThat(result.amountOwed()).isNull();
@@ -346,7 +313,6 @@ class SettlementServiceTest {
         assertThat(result.creditor()).isNull();
         assertThat(result.settled()).isFalse();
         assertThat(result.pendingMessage()).isNotBlank();
-        // Mensagem deve orientar o usuário a cadastrar receitas
         assertThat(result.pendingMessage()).containsIgnoringCase("receitas");
     }
 
@@ -355,27 +321,22 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S06: FIFTY_FIFTY + PROPORTIONAL sem receita → acerto pendente (PROPORTIONAL bloqueia tudo)")
+    @DisplayName("TC-S06: FIFTY_FIFTY + PROPORTIONAL sem receita → PROPORTIONAL bloqueia o acerto inteiro")
     void mix_fiftyFiftyAndProportionalWithoutIncome_entireSettlementIsPending() {
-        // Despesa R$200 FIFTY_FIFTY paga por PersonA
-        Transaction fiftyFiftyExpense = cashExpense(new BigDecimal("200.00"), SplitRule.FIFTY_FIFTY, personA);
-        // Despesa R$300 PROPORTIONAL paga por PersonB (sem receitas)
+        Transaction fiftyFiftyExpense  = cashExpense(new BigDecimal("200.00"), SplitRule.FIFTY_FIFTY, personA);
         Transaction proportionalExpense = cashExpense(new BigDecimal("300.00"), SplitRule.PROPORTIONAL, personB);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END))
                 .thenReturn(List.of(fiftyFiftyExpense, proportionalExpense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of()); // sem receitas individuais
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
-        // A presença de qualquer PROPORTIONAL pendente torna o acerto inteiro pendente
         assertThat(result.pendingProportional()).isTrue();
         assertThat(result.amountOwed()).isNull();
         assertThat(result.debtor()).isNull();
         assertThat(result.settled()).isFalse();
-        // O totalExpense ainda deve ser computado (soma de todas as despesas)
         assertThat(result.totalExpense()).isEqualByComparingTo("500.00");
     }
 
@@ -386,9 +347,9 @@ class SettlementServiceTest {
     @Test
     @DisplayName("TC-S07: mês sem despesas → settled=true, totalExpense=0, amountOwed=null")
     void noExpenses_returnsSettledWithZero() {
-        stubNoExpenses();
+        stubNoExpensesMay();
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.settled()).isTrue();
         assertThat(result.pendingProportional()).isFalse();
@@ -396,7 +357,6 @@ class SettlementServiceTest {
         assertThat(result.amountOwed()).isNull();
         assertThat(result.debtor()).isNull();
         assertThat(result.creditor()).isNull();
-
         assertThat(result.personA().totalPaid()).isEqualByComparingTo("0.00");
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("0.00");
         assertThat(result.personB().totalPaid()).isEqualByComparingTo("0.00");
@@ -408,31 +368,20 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S08: parcela de cartão (R$100 em fev/2026) entra no acerto de fev, não o total da compra")
+    @DisplayName("TC-S08: parcela de R$100 (fev/2026) entra no acerto de fev, não o total da compra")
     void installment_onlyCurrentMonthInstallmentEntersSettlement() {
-        // Compra de R$300 em 3x; a parcela de fevereiro (R$100) cai em 2026-02
-        LocalDate FEB_2026     = LocalDate.of(2026, 2, 1);
-        LocalDate FEB_2026_END = LocalDate.of(2026, 2, 28);
-
-        // Cria a Installment do mês de fevereiro (R$100), pagamento por PersonA
         Installment febInstallment = installment(
-                new BigDecimal("100.00"), SplitRule.FIFTY_FIFTY, personA, FEB_2026);
+                new BigDecimal("100.00"), SplitRule.FIFTY_FIFTY, personA, FEB_START);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(FEB_2026))
-                .thenReturn(List.of(febInstallment));
-        when(transactionRepository.findCashExpensesByMonth(FEB_2026, FEB_2026_END))
-                .thenReturn(List.of());
-        when(transactionRepository.findIncomesByMonth(FEB_2026, FEB_2026_END))
-                .thenReturn(List.of());
+        when(installmentRepository.findExpenseInstallmentsByMonth(FEB_START)).thenReturn(List.of(febInstallment));
+        when(transactionRepository.findCashExpensesByMonth(FEB_START, FEB_END)).thenReturn(List.of());
+        when(transactionRepository.findIndividualIncomesByMonth(FEB_START, FEB_END)).thenReturn(List.of());
 
-        SettlementResponse result = settlementService.calculate(FEB_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(FEB_2026);
 
-        // totalExpense deve ser R$100 (somente a parcela de fevereiro)
         assertThat(result.totalExpense()).isEqualByComparingTo("100.00");
         assertThat(result.pendingProportional()).isFalse();
         assertThat(result.settled()).isFalse();
-
-        // PersonA pagou R$100, deveria R$50 → PersonB deve R$50
         assertThat(result.debtor()).isEqualTo("PERSON_B");
         assertThat(result.creditor()).isEqualTo("PERSON_A");
         assertThat(result.amountOwed()).isEqualByComparingTo("50.00");
@@ -443,32 +392,25 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S09: receita FIFTY_FIFTY não conta para a proporção — apenas receitas individuais")
+    @DisplayName("TC-S09: receita FIFTY_FIFTY excluída da proporção — apenas receitas individuais contam")
     void fiftyFiftyIncome_doesNotAffectProportionalRatio() {
-        // IncomeA R$3000 (PERSON_A), IncomeB R$3000 (PERSON_B), IncomeShared R$4000 (FIFTY_FIFTY)
-        // Apenas IncomeA e IncomeB entram na proporção → 50%/50%
         Transaction incomeA = income(new BigDecimal("3000.00"), SplitRule.PERSON_A, personA);
         Transaction incomeB = income(new BigDecimal("3000.00"), SplitRule.PERSON_B, personB);
-        Transaction incomeShared = income(new BigDecimal("4000.00"), SplitRule.FIFTY_FIFTY, personA);
+        // Receita compartilhada — NÃO deve entrar na proporção (o repositório já filtra)
 
-        // Despesa R$1000 PROPORTIONAL, paga por PersonA
         Transaction expense = cashExpense(new BigDecimal("1000.00"), SplitRule.PROPORTIONAL, personA);
 
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(incomeA, incomeB, incomeShared));
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        // findIndividualIncomesByMonth retorna apenas PERSON_A e PERSON_B → 50%/50%
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END))
+                .thenReturn(List.of(incomeA, incomeB));
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.pendingProportional()).isFalse();
-
-        // Proporção deve ser 50%/50% (3000/(3000+3000) = 50%) — ignora a receita FIFTY_FIFTY
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("500.00");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("500.00");
-
-        // PersonA pagou 1000, deveria 500 → PersonB deve 500
         assertThat(result.debtor()).isEqualTo("PERSON_B");
         assertThat(result.creditor()).isEqualTo("PERSON_A");
         assertThat(result.amountOwed()).isEqualByComparingTo("500.00");
@@ -479,72 +421,29 @@ class SettlementServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("TC-S10: PROPORTIONAL arredondamento — R$100.01 com ratio 60%/40% → shareA=R$60.01, shareB=R$40.00")
+    @DisplayName("TC-S10: arredondamento HALF_UP — R$100.01 com ratio 60%/40% → shareA=R$60.01, shareB=R$40.00")
     void proportional_rounding_halfUp_consistent() {
-        // Receitas: Alice R$6000 (60%), Bob R$4000 (40%)
         Transaction incomeA = income(new BigDecimal("6000.00"), SplitRule.PERSON_A, personA);
         Transaction incomeB = income(new BigDecimal("4000.00"), SplitRule.PERSON_B, personB);
+        Transaction expense  = cashExpense(new BigDecimal("100.01"), SplitRule.PROPORTIONAL, personA);
 
-        // Despesa R$100.01 PROPORTIONAL, paga por PersonA
-        Transaction expense = cashExpense(new BigDecimal("100.01"), SplitRule.PROPORTIONAL, personA);
-
-        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_2026)).thenReturn(List.of());
-        when(transactionRepository.findCashExpensesByMonth(MAY_2026, MAY_2026_END))
-                .thenReturn(List.of(expense));
-        when(transactionRepository.findIncomesByMonth(MAY_2026, MAY_2026_END))
+        when(installmentRepository.findExpenseInstallmentsByMonth(MAY_START)).thenReturn(List.of());
+        when(transactionRepository.findCashExpensesByMonth(MAY_START, MAY_END)).thenReturn(List.of(expense));
+        when(transactionRepository.findIndividualIncomesByMonth(MAY_START, MAY_END))
                 .thenReturn(List.of(incomeA, incomeB));
 
-        SettlementResponse result = settlementService.calculate(MAY_2026, personAId, personBId);
+        SettlementResponse result = settlementService.calculate(MAY_2026);
 
         assertThat(result.pendingProportional()).isFalse();
-
         // shareA = 100.01 * 0.60 = 60.006 → HALF_UP → 60.01
-        // shareB = 100.01 - 60.01 = 40.00
+        // shareB = 100.01 - 60.01 = 40.00 (sem perda de centavo)
         assertThat(result.personA().shouldPay()).isEqualByComparingTo("60.01");
         assertThat(result.personB().shouldPay()).isEqualByComparingTo("40.00");
 
-        // Soma das fatias = 60.01 + 40.00 = 100.01 (igual ao total da despesa)
         BigDecimal totalShares = result.personA().shouldPay().add(result.personB().shouldPay());
         assertThat(totalShares).isEqualByComparingTo("100.01");
-
-        // PersonA pagou 100.01, deveria 60.01 → PersonB deve 40.00
         assertThat(result.amountOwed()).isEqualByComparingTo("40.00");
         assertThat(result.debtor()).isEqualTo("PERSON_B");
         assertThat(result.creditor()).isEqualTo("PERSON_A");
-    }
-
-    // =========================================================================
-    // Testes unitários do método calculateShares (via acesso package-private)
-    // =========================================================================
-
-    @Test
-    @DisplayName("calculateShares — PROPORTIONAL sem receita retorna null (sinaliza pendência)")
-    void calculateShares_proportional_noIncome_returnsNull() {
-        BigDecimal[] shares = settlementService.calculateShares(
-                new BigDecimal("500.00"),
-                SplitRule.PROPORTIONAL,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                false // hasIndividualIncome = false
-        );
-
-        assertThat(shares).isNull();
-    }
-
-    @Test
-    @DisplayName("calculateShares — FIFTY_FIFTY com valor ímpar distribui sem perder centavo")
-    void calculateShares_fiftyFifty_oddAmount_noLostCent() {
-        // R$1.01 / 2 = 0.505 → HALF_UP → 0.51 e 0.50 (soma = 1.01)
-        BigDecimal[] shares = settlementService.calculateShares(
-                new BigDecimal("1.01"),
-                SplitRule.FIFTY_FIFTY,
-                BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                false
-        );
-
-        assertThat(shares).isNotNull().hasSize(2);
-        BigDecimal soma = shares[0].add(shares[1]);
-        assertThat(soma).isEqualByComparingTo("1.01");
     }
 }
