@@ -4,6 +4,8 @@
 
 ### S-06-03: API de Acerto de Contas — CONCLUÍDA
 
+**Branch:** `feature/s06-backend-settlement`
+
 **Arquivos criados/modificados:**
 
 1. `backend/src/main/java/com/gastos/dto/settlement/PersonSettlementDTO.java`
@@ -29,8 +31,12 @@
 **Status dos testes:**
 - `mvn test` → BUILD SUCCESS (102 tests, 0 failures, 0 errors, 17 skipped)
 
-**Branch:** `feature/s06-backend-settlement`
-**Commits:** Todos os arquivos de settlement estão no commit `f0096b0`
+**Commits na branch:**
+- feat(settlement): adiciona DTOs PersonSettlementDTO e SettlementResponse
+- feat(settlement): adiciona findIndividualIncomesByMonth ao TransactionRepository
+- feat(settlement): implementa SettlementService com algoritmo completo de acerto
+- feat(settlement): implementa SettlementController — GET /api/settlement?month=yyyy-MM
+- fix(settlement): corrige UnsupportedOperationException ao ordenar persons
 
 ## Pendente
 - Nada. A implementação está completa e testada.
