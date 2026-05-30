@@ -7,7 +7,6 @@ import com.gastos.domain.Person;
 import com.gastos.repository.CategoryRepository;
 import com.gastos.repository.PersonRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -75,7 +74,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled("Aguardando merge de feature/s05-backend-budget")
 class BudgetIntegrationTest {
 
     @Autowired
