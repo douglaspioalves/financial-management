@@ -21,6 +21,8 @@ Frontend: http://localhost:4200 | Backend: http://localhost:8080
 - Lancamentos de despesas e receitas, com categorias, cartoes e parcelas.
 - Acerto de contas mensal: quem deve quanto a quem (parcelas entram mes a mes).
 - Orcamento por categoria, lancamentos recorrentes e dashboard.
+- Exportacao de lançamentos por mes em CSV ou XLSX.
+- Responsivo para mobile; modos claro e escuro.
 
 ## Stack
 
