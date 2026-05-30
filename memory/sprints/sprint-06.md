@@ -129,5 +129,5 @@ DIA 9–10 (fechamento)
 - [ ] `docker compose up --build` limpo (validar na próxima sessão)
 - [x] Tag `sprint-06` criada no git (local; servidor restringe push de tags)
 - [x] Review registrada em `memory/reviews/review-sprint-06.md`
-- [ ] Retro registrada em `memory/retros/retro-sprint-06.md`
-- [ ] Learnings atualizados em `memory/learnings/`
+- [x] Retro registrada em `memory/retros/retro-sprint-06.md`
+- [x] Learnings atualizados em `memory/learnings/` (backend.md e devops.md)

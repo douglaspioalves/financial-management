@@ -31,6 +31,13 @@ JWT_EXPIRATION_MS=86400000
 
 ## Aprendizados das retrospectivas
 
+### Sprint 06 (2026-05-30)
+
+- Merge de 6 branches pode gerar conflito "both added" em arquivos de checkpoint criados por dois agentes independentes. Resolver manualmente preservando o conteúdo de ambos.
+- Servidor git local rejeita `git push --tags` com HTTP 403 — tags criadas localmente são suficientes para rastreabilidade enquanto `master` está sincronizado.
+- `annotationProcessorPaths` para Lombok deve estar no `pom.xml` para garantir que `mvn test` funcione no ambiente remoto (sem Maven Wrapper configurado).
+- O arquivo `.mvn/wrapper/maven-wrapper.properties` está no `.gitignore` por padrão. Para commitar, usar `git add -f`.
+
 ### Sprint 01 (2026-05-28)
 
 - JWT_SECRET padrão no docker-compose deve ser Base64 válido (≥ 256 bits) ou o JwtService precisará de fallback UTF-8.
