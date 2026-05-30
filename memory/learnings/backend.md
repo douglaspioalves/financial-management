@@ -20,6 +20,20 @@
 
 ## Aprendizados das retrospectivas
 
+### Sprint 07 (2026-05-30) — Exportacao CSV/XLSX
+
+**Apache POI e BigDecimal:**
+- Nunca converter `BigDecimal` para `double` ao escrever celulas XLSX — mesmo que a API do POI aceite `double`, isso viola a convencao do projeto e pode causar perda de precisao.
+- Padrao correto: `cell.setCellValue(row.amount().toPlainString())` — o Excel reconhece como numero mesmo com o tipo `STRING` do POI quando formatado adequadamente. Alternativa: `CellType.NUMERIC` com `new BigDecimal(toPlainString())` via `double` apenas se escala for garantida.
+- O revisor bloqueou o merge por essa violacao (REC-01). O commentario no codigo nao e suficiente para justificar desvio de convencao — use o padrao ou proponha uma excecao documentada no CLAUDE.md.
+
+**Cobertura minima de testes para endpoints novos:**
+- Todo endpoint novo deve ter pelo menos 3 testes de integracao: (1) sem token → 401, (2) parametro invalido → 400 com mensagem pt-br, (3) caso de sucesso → 200 com corpo valido.
+- O revisor exigiu isso como REC-02 no Sprint 07 antes de aprovar o merge — adotar como regra padrao.
+
+**Validacao de parametros de query:**
+- Validar `format` e `month` como enum/YearMonth antes de qualquer processamento — rejeitar com 400 e mensagem pt-br. Nunca passar strings brutas da URL para headers HTTP (Content-Disposition) ou para consultas SQL.
+
 ### Sprint 01 (2026-05-27)
 
 **Spring Security 6 + JWT (JJWT 0.12.x):**
