@@ -26,9 +26,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -333,6 +335,52 @@ class FlowIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.settled").value(true))
                 .andExpect(jsonPath("$.totalExpense").value(0));
+    }
+
+    // =========================================================================
+    // TC-F09: Export sem token → 401
+    // =========================================================================
+
+    @Test
+    @Order(9)
+    @DisplayName("TC-F09: GET /api/export sem token retorna 401")
+    void tcF09_exportWithoutToken_returns401() throws Exception {
+        mockMvc.perform(get("/api/export")
+                        .param("month", "2026-10")
+                        .param("format", "csv"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // =========================================================================
+    // TC-F10: Export CSV com token valido → 200 + Content-Type text/csv
+    // =========================================================================
+
+    @Test
+    @Order(10)
+    @DisplayName("TC-F10: GET /api/export?format=csv com token retorna 200 e Content-Type text/csv")
+    void tcF10_exportCsvWithToken_returns200WithCsvContentType() throws Exception {
+        mockMvc.perform(get("/api/export")
+                        .header("Authorization", "Bearer " + obtainToken())
+                        .param("month", "2026-10")
+                        .param("format", "csv"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", containsString("text/csv")))
+                .andExpect(header().string("Content-Disposition", containsString("gastos-2026-10.csv")));
+    }
+
+    // =========================================================================
+    // TC-F11: Export com formato invalido → 400
+    // =========================================================================
+
+    @Test
+    @Order(11)
+    @DisplayName("TC-F11: GET /api/export?format=pdf com token retorna 400")
+    void tcF11_exportInvalidFormat_returns400() throws Exception {
+        mockMvc.perform(get("/api/export")
+                        .header("Authorization", "Bearer " + obtainToken())
+                        .param("month", "2026-10")
+                        .param("format", "pdf"))
+                .andExpect(status().isBadRequest());
     }
 
     // =========================================================================

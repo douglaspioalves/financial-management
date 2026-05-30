@@ -101,8 +101,7 @@ public class ExportService {
                 dataRow.createCell(2).setCellValue(row.category());
                 dataRow.createCell(3).setCellValue(row.paidBy());
                 dataRow.createCell(4).setCellValue(row.type());
-                // Valor como número (BigDecimal → double é aceitável apenas para serialização XLS)
-                dataRow.createCell(5).setCellValue(row.amount().doubleValue());
+                dataRow.createCell(5).setCellValue(row.amount().toPlainString());
                 dataRow.createCell(6).setCellValue(row.splitLabel());
                 dataRow.createCell(7).setCellValue(row.installmentLabel());
             }
