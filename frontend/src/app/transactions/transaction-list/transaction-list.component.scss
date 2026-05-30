@@ -496,29 +496,3 @@
     padding: 0 12px 12px;
   }
 }
-
-// ---- Wrapper de scroll horizontal para tabela de parcelas em mobile ----
-.installments-table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 375px) {
-  .tl-title {
-    font-size: 1.1rem;
-  }
-
-  .tx-amount {
-    font-size: 0.88rem;
-  }
-
-  .month-label {
-    font-size: 1rem;
-    min-width: 130px;
-  }
-
-  .tl-header {
-    padding: 10px 12px;
-  }
-}
