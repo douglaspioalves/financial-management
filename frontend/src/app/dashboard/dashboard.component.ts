@@ -80,72 +80,101 @@ import {
           </button>
         </div>
 
-        <!-- ===== CARDS DE RESUMO ===== -->
-        <div class="summary-grid">
-          <!-- Receitas -->
-          <div class="summary-card summary-card--income">
-            <div class="summary-card__icon">
-              <mat-icon>trending_up</mat-icon>
+        <!-- ===== CARDS DE RESUMO (skeleton quando carregando) ===== -->
+        @if (loading()) {
+          <div class="summary-grid">
+            <div class="summary-card summary-card--skeleton">
+              <div class="skeleton skeleton--icon"></div>
+              <div class="summary-card__body">
+                <div class="skeleton skeleton--label"></div>
+                <div class="skeleton skeleton--amount"></div>
+                <div class="skeleton skeleton--variation"></div>
+              </div>
             </div>
-            <div class="summary-card__body">
-              <span class="summary-card__label">Receitas</span>
-              <span class="summary-card__amount">
-                {{ formatCurrency(data()?.totalIncome ?? 0) }}
-              </span>
-              <span class="summary-card__variation"
-                    [class.variation--up]="(data()?.incomeVariation ?? 0) >= 0"
-                    [class.variation--down]="(data()?.incomeVariation ?? 0) < 0">
-                <ng-container *ngIf="data()?.incomeVariation !== null && data()?.incomeVariation !== undefined; else noVar">
-                  <mat-icon class="variation__icon">
-                    {{ (data()?.incomeVariation ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward' }}
-                  </mat-icon>
-                  {{ formatVariation(data()?.incomeVariation) }}
-                </ng-container>
-                <ng-template #noVar>—</ng-template>
-              </span>
+            <div class="summary-card summary-card--skeleton">
+              <div class="skeleton skeleton--icon"></div>
+              <div class="summary-card__body">
+                <div class="skeleton skeleton--label"></div>
+                <div class="skeleton skeleton--amount"></div>
+                <div class="skeleton skeleton--variation"></div>
+              </div>
+            </div>
+            <div class="summary-card summary-card--skeleton">
+              <div class="skeleton skeleton--icon"></div>
+              <div class="summary-card__body">
+                <div class="skeleton skeleton--label"></div>
+                <div class="skeleton skeleton--amount"></div>
+                <div class="skeleton skeleton--variation"></div>
+              </div>
             </div>
           </div>
+        } @else {
+          <div class="summary-grid">
+            <!-- Receitas -->
+            <div class="summary-card summary-card--income">
+              <div class="summary-card__icon">
+                <mat-icon>trending_up</mat-icon>
+              </div>
+              <div class="summary-card__body">
+                <span class="summary-card__label">Receitas</span>
+                <span class="summary-card__amount">
+                  {{ formatCurrency(data()?.totalIncome ?? 0) }}
+                </span>
+                <span class="summary-card__variation"
+                      [class.variation--up]="(data()?.incomeVariation ?? 0) >= 0"
+                      [class.variation--down]="(data()?.incomeVariation ?? 0) < 0">
+                  <ng-container *ngIf="data()?.incomeVariation !== null && data()?.incomeVariation !== undefined; else noVar">
+                    <mat-icon class="variation__icon">
+                      {{ (data()?.incomeVariation ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+                    </mat-icon>
+                    {{ formatVariation(data()?.incomeVariation) }}
+                  </ng-container>
+                  <ng-template #noVar>—</ng-template>
+                </span>
+              </div>
+            </div>
 
-          <!-- Despesas -->
-          <div class="summary-card summary-card--expense">
-            <div class="summary-card__icon">
-              <mat-icon>trending_down</mat-icon>
+            <!-- Despesas -->
+            <div class="summary-card summary-card--expense">
+              <div class="summary-card__icon">
+                <mat-icon>trending_down</mat-icon>
+              </div>
+              <div class="summary-card__body">
+                <span class="summary-card__label">Despesas</span>
+                <span class="summary-card__amount">
+                  {{ formatCurrency(data()?.totalExpense ?? 0) }}
+                </span>
+                <span class="summary-card__variation"
+                      [class.variation--up]="(data()?.expenseVariation ?? 0) < 0"
+                      [class.variation--down]="(data()?.expenseVariation ?? 0) >= 0">
+                  <ng-container *ngIf="data()?.expenseVariation !== null && data()?.expenseVariation !== undefined; else noVarExp">
+                    <mat-icon class="variation__icon">
+                      {{ (data()?.expenseVariation ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+                    </mat-icon>
+                    {{ formatVariation(data()?.expenseVariation) }}
+                  </ng-container>
+                  <ng-template #noVarExp>—</ng-template>
+                </span>
+              </div>
             </div>
-            <div class="summary-card__body">
-              <span class="summary-card__label">Despesas</span>
-              <span class="summary-card__amount">
-                {{ formatCurrency(data()?.totalExpense ?? 0) }}
-              </span>
-              <span class="summary-card__variation"
-                    [class.variation--up]="(data()?.expenseVariation ?? 0) < 0"
-                    [class.variation--down]="(data()?.expenseVariation ?? 0) >= 0">
-                <ng-container *ngIf="data()?.expenseVariation !== null && data()?.expenseVariation !== undefined; else noVarExp">
-                  <mat-icon class="variation__icon">
-                    {{ (data()?.expenseVariation ?? 0) >= 0 ? 'arrow_upward' : 'arrow_downward' }}
-                  </mat-icon>
-                  {{ formatVariation(data()?.expenseVariation) }}
-                </ng-container>
-                <ng-template #noVarExp>—</ng-template>
-              </span>
-            </div>
-          </div>
 
-          <!-- Saldo -->
-          <div class="summary-card summary-card--balance">
-            <div class="summary-card__icon">
-              <mat-icon>account_balance_wallet</mat-icon>
-            </div>
-            <div class="summary-card__body">
-              <span class="summary-card__label">Saldo</span>
-              <span class="summary-card__amount"
-                    [class.amount--positive]="(data()?.balance ?? 0) >= 0"
-                    [class.amount--negative]="(data()?.balance ?? 0) < 0">
-                {{ (data()?.balance ?? 0) >= 0 ? '+' : '' }}{{ formatCurrency(data()?.balance ?? 0) }}
-              </span>
-              <span class="summary-card__variation">vs. mês anterior</span>
+            <!-- Saldo -->
+            <div class="summary-card summary-card--balance">
+              <div class="summary-card__icon">
+                <mat-icon>account_balance_wallet</mat-icon>
+              </div>
+              <div class="summary-card__body">
+                <span class="summary-card__label">Saldo</span>
+                <span class="summary-card__amount"
+                      [class.amount--positive]="(data()?.balance ?? 0) >= 0"
+                      [class.amount--negative]="(data()?.balance ?? 0) < 0">
+                  {{ (data()?.balance ?? 0) >= 0 ? '+' : '' }}{{ formatCurrency(data()?.balance ?? 0) }}
+                </span>
+                <span class="summary-card__variation">vs. mês anterior</span>
+              </div>
             </div>
           </div>
-        </div>
+        }
 
         <!-- ===== SEÇÃO INFERIOR: GRÁFICO + LISTA ===== -->
         <div class="bottom-grid">
@@ -544,6 +573,50 @@ import {
     .shortcut-card__icon--sand { background: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg-card)); color: var(--color-warning); }
     .shortcut-card__icon--mint { background: color-mix(in srgb, var(--color-income) 15%, var(--color-bg-card)); color: var(--color-income); }
     .shortcut-card__label { color: var(--color-text-primary); }
+
+    /* ===== SKELETON LOADING ===== */
+    @keyframes skeleton-pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
+
+    .summary-card--skeleton {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      animation: skeleton-pulse 1.4s ease-in-out infinite;
+    }
+
+    .skeleton {
+      background: var(--color-bg-surface);
+      border-radius: 6px;
+    }
+    .skeleton--icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      flex-shrink: 0;
+    }
+    .skeleton--label {
+      width: 64px;
+      height: 10px;
+      margin-bottom: 10px;
+    }
+    .skeleton--amount {
+      width: 120px;
+      height: 22px;
+      margin-bottom: 8px;
+    }
+    .skeleton--variation {
+      width: 80px;
+      height: 10px;
+    }
   `],
 })
 export class DashboardComponent implements OnInit {

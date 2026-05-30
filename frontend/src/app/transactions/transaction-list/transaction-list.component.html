@@ -6,9 +6,28 @@
       <button mat-icon-button class="back-btn" routerLink="/dashboard" matTooltip="Voltar ao painel">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h1 class="tl-title">Lancamentos</h1>
+      <h1 class="tl-title">Lançamentos</h1>
     </div>
     <div class="tl-header__right">
+      <!-- Botão Exportar -->
+      <button mat-icon-button
+              [matMenuTriggerFor]="exportMenu"
+              [disabled]="exporting()"
+              matTooltip="Exportar lançamentos"
+              aria-label="Exportar lançamentos do mês">
+        <mat-icon>{{ exporting() ? 'hourglass_empty' : 'download' }}</mat-icon>
+      </button>
+      <mat-menu #exportMenu="matMenu">
+        <button mat-menu-item (click)="exportData('csv')">
+          <mat-icon>table_view</mat-icon>
+          <span>Exportar CSV</span>
+        </button>
+        <button mat-menu-item (click)="exportData('xlsx')">
+          <mat-icon>grid_on</mat-icon>
+          <span>Exportar Excel</span>
+        </button>
+      </mat-menu>
+
       <button mat-icon-button
               [matTooltip]="theme.isDark() ? 'Modo claro' : 'Modo escuro'"
               (click)="theme.toggle()">
@@ -17,18 +36,18 @@
     </div>
   </header>
 
-  <!-- Navegacao de mes -->
+  <!-- Navegação de mês -->
   <div class="month-nav">
-    <button mat-icon-button (click)="previousMonth()" matTooltip="Mes anterior">
+    <button mat-icon-button (click)="previousMonth()" matTooltip="Mês anterior">
       <mat-icon>chevron_left</mat-icon>
     </button>
     <span class="month-label">{{ monthLabel() }}</span>
-    <button mat-icon-button (click)="nextMonth()" matTooltip="Proximo mes">
+    <button mat-icon-button (click)="nextMonth()" matTooltip="Próximo mês">
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
 
-  <!-- Resumo do mes -->
+  <!-- Resumo do mês -->
   @if (!loading() && transactions().length > 0) {
     <div class="summary-bar">
       <div class="summary-card summary-card--income">
@@ -46,27 +65,29 @@
     </div>
   }
 
-  <!-- Conteudo principal -->
+  <!-- Conteúdo principal -->
   <div class="tl-content">
 
     @if (loading()) {
+      <!-- Loading state com skeleton -->
       <div class="loading-state">
         <mat-spinner diameter="48"></mat-spinner>
-        <p>Carregando lancamentos...</p>
+        <p>Carregando lançamentos...</p>
       </div>
     } @else if (transactions().length === 0) {
+      <!-- Empty state -->
       <div class="empty-state">
         <div class="empty-state__icon">
           <mat-icon>receipt_long</mat-icon>
         </div>
-        <h3>Nenhum lancamento em {{ monthLabel() }}</h3>
-        <p>Toque no botao <strong>+</strong> para adicionar o primeiro lancamento do mes.</p>
+        <h3>Nenhum lançamento em {{ monthLabel() }}</h3>
+        <p>Toque no botão <strong>+</strong> para adicionar o primeiro lançamento do mês.</p>
       </div>
     } @else {
       <div class="tx-list">
         @for (tx of transactions(); track tx.id) {
 
-          <!-- Lancamento parcelado: usa expansion panel -->
+          <!-- Lançamento parcelado: usa expansion panel -->
           @if (tx.installmentsTotal > 1) {
             <mat-accordion class="tx-accordion">
               <mat-expansion-panel
@@ -88,7 +109,7 @@
                     <div class="tx-info">
                       <div class="tx-info__title-row">
                         <span class="tx-info__title">{{ tx.description || tx.category.name }}</span>
-                        <!-- Badge "parcela atual/total" em lilas -->
+                        <!-- Badge "parcela atual/total" em lilás -->
                         <span class="chip chip--installment"
                               [matTooltip]="'Parcela ' + currentInstallmentNumber(tx) + ' de ' + tx.installmentsTotal">
                           {{ currentInstallmentNumber(tx) }}/{{ tx.installmentsTotal }}
@@ -124,9 +145,6 @@
                     </div>
 
                     <div class="tx-actions" (click)="$event.stopPropagation()">
-                      <button mat-icon-button class="action-btn" (click)="openEditForm(tx)" matTooltip="Editar">
-                        <mat-icon>edit</mat-icon>
-                      </button>
                       <button mat-icon-button class="action-btn action-btn--delete" (click)="confirmDelete(tx)" matTooltip="Excluir">
                         <mat-icon>delete_outline</mat-icon>
                       </button>
@@ -135,7 +153,7 @@
                   </div>
                 </mat-expansion-panel-header>
 
-                <!-- Conteudo expandido: lista de parcelas -->
+                <!-- Conteúdo expandido: lista de parcelas -->
                 <div class="installments-panel">
                   @if (installmentsLoading()[tx.id]) {
                     <div class="installments-loading">
@@ -143,26 +161,28 @@
                       <span>Carregando parcelas...</span>
                     </div>
                   } @else if (installmentsMap()[tx.id]) {
-                    <table class="installments-table">
-                      <thead>
-                        <tr>
-                          <th>#</th>
-                          <th>Mes de referencia</th>
-                          <th class="col-value">Valor</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (inst of installmentsMap()[tx.id]; track inst.id) {
-                          <tr [class.installment-row--current]="isCurrentMonthInstallment(inst)">
-                            <td class="col-num">{{ inst.number }}</td>
-                            <td>{{ formatReferenceMonth(inst.referenceMonth) }}</td>
-                            <td class="col-value">
-                              {{ inst.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
-                            </td>
+                    <div class="installments-table-wrapper">
+                      <table class="installments-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Mês de referência</th>
+                            <th class="col-value">Valor</th>
                           </tr>
-                        }
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          @for (inst of installmentsMap()[tx.id]; track inst.id) {
+                            <tr [class.installment-row--current]="isCurrentMonthInstallment(inst)">
+                              <td class="col-num">{{ inst.number }}</td>
+                              <td>{{ formatReferenceMonth(inst.referenceMonth) }}</td>
+                              <td class="col-value">
+                                {{ inst.amount | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
                   } @else {
                     <p class="installments-empty">Nenhuma parcela encontrada.</p>
                   }
@@ -171,7 +191,7 @@
               </mat-expansion-panel>
             </mat-accordion>
           } @else {
-            <!-- Lancamento a vista: comportamento original -->
+            <!-- Lançamento à vista: comportamento original -->
             <div class="tx-item"
                  [class.tx-item--income]="tx.type === 'INCOME'"
                  [class.tx-item--expense]="tx.type === 'EXPENSE'">
@@ -228,7 +248,7 @@
   </div>
 
   <!-- FAB -->
-  <button mat-fab class="fab" color="primary" (click)="openNewForm()" matTooltip="Novo lancamento" aria-label="Novo lancamento">
+  <button mat-fab class="fab" color="primary" (click)="openNewForm()" matTooltip="Novo lançamento" aria-label="Novo lançamento">
     <mat-icon>add</mat-icon>
   </button>
 

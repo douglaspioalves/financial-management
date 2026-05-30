@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -36,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
     MatTooltipModule,
     MatTableModule,
     MatChipsModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './recurring-list.component.html',
   styleUrl: './recurring-list.component.scss',
