@@ -1,0 +1,422 @@
+.recurring-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  padding-bottom: 88px;
+}
+
+// ─── Header ────────────────────────────────────────────────────────────────────
+.recurring-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.brand__sub {
+  font-size: 0.7rem;
+  color: var(--color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+// ─── Loading ───────────────────────────────────────────────────────────────────
+.loading-bar {
+  position: sticky;
+  top: 67px;
+  z-index: 9;
+}
+
+// ─── Título da página ─────────────────────────────────────────────────────────
+.page-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 20px 16px;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+// ─── Botão nova regra ─────────────────────────────────────────────────────────
+.btn-new {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &--empty {
+    margin-top: 12px;
+  }
+}
+
+// ─── Conteúdo ─────────────────────────────────────────────────────────────────
+.recurring-content {
+  padding: 0 16px;
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 8px;
+}
+
+.empty-state__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
+  display: grid;
+  place-items: center;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: var(--color-primary);
+  }
+}
+
+.empty-state__title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.empty-state__sub {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 360px;
+}
+
+// ─── Tabela desktop ───────────────────────────────────────────────────────────
+.table-container {
+  display: none;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    display: block;
+  }
+}
+
+.recurring-table {
+  width: 100%;
+  background: transparent;
+
+  th {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    background: var(--color-bg-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  td {
+    font-size: 0.88rem;
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding: 14px 16px;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.table-row:hover td {
+  background: var(--color-bg-surface);
+}
+
+.col-right {
+  text-align: right !important;
+}
+
+.col-center {
+  text-align: center !important;
+}
+
+// ─── Células ──────────────────────────────────────────────────────────────────
+.cell-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cell-desc__name {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.cell-desc__cat {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
+// ─── Chip de tipo ─────────────────────────────────────────────────────────────
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--expense {
+    background: color-mix(in srgb, var(--color-expense) 15%, transparent);
+    color: var(--color-expense);
+  }
+
+  &--income {
+    background: color-mix(in srgb, var(--color-income) 15%, transparent);
+    color: var(--color-income);
+  }
+}
+
+.type-chip__icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+// ─── Valor ────────────────────────────────────────────────────────────────────
+.amount {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+
+  &--income { color: var(--color-income); }
+  &--expense { color: var(--color-expense); }
+}
+
+// ─── Frequência ───────────────────────────────────────────────────────────────
+.freq-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+// ─── Data, split, pessoa ──────────────────────────────────────────────────────
+.date-text,
+.split-text,
+.person-text {
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+// ─── Botão desativar ──────────────────────────────────────────────────────────
+.action-btn {
+  color: var(--color-text-secondary);
+
+  &--danger {
+    color: var(--color-expense);
+  }
+}
+
+// ─── Cards mobile ─────────────────────────────────────────────────────────────
+.cards-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+.rule-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rule-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.rule-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.rule-card__name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+.rule-card__cat {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+.rule-card__header-right {
+  flex-shrink: 0;
+}
+
+.rule-card__amount {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.rule-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rule-card__meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.meta-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+  color: var(--color-text-disabled);
+}
+
+.rule-card__actions {
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-deactivate {
+  color: var(--color-expense) !important;
+  border-color: var(--color-expense) !important;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// ─── FAB ──────────────────────────────────────────────────────────────────────
+.fab-new {
+  position: fixed;
+  bottom: 28px;
+  right: 24px;
+  z-index: 100;
+  background: var(--color-primary) !important;
+  color: #fff !important;
+  box-shadow: var(--shadow-lg) !important;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+}
+
+// ─── Responsivo ───────────────────────────────────────────────────────────────
+@media (min-width: 640px) {
+  .recurring-content {
+    padding: 0 24px;
+  }
+
+  .page-title-row {
+    padding: 28px 24px 16px;
+  }
+}
