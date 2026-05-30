@@ -31,6 +31,29 @@ JWT_EXPIRATION_MS=86400000
 
 ## Aprendizados das retrospectivas
 
+### Sprint 07 (2026-05-30) — Merges finais e testes bloqueados
+
+**Branches de infra/chore devem ser separadas de branches de feature:**
+- Commits de `.gitignore`, remocao de `@Disabled`, atualizacao de dependencias de CI devem ir em uma branch `chore/sprint-NN`, nunca misturados em `feature/sNN-backend` ou `feature/sNN-frontend`.
+- No Sprint 07 commits de infra em branches erradas geraram reverts e poluiram o historico. Exemplo do problema: `chore: ignorar diretorio de worktrees` commitado duas vezes em branches diferentes.
+
+**Testes com @Disabled devem ser rastreados ativamente:**
+- Ao encontrar um `@Disabled` em qualquer teste, registrar no `sprint-NN.md` com a razao e o criterio de remocao.
+- Nao deixar para o DevOps final remover — qualquer agente pode e deve remover quando o impedimento for resolvido.
+- No Sprint 07, `BudgetIntegrationTest` e `DashboardIntegrationTest` ficaram desabilitados por todo o sprint e foram removidos apenas na branch `fix/enable-disabled-integration-tests` pelo ultimo DevOps.
+
+**Procedimento de merge na ordem correta:**
+1. Schema/migrations primeiro (se houver).
+2. Backend e Frontend em paralelo.
+3. Testes.
+4. Fixes pos-revisao.
+5. Chores/infra.
+- No Sprint 07 a ordem foi respeitada e nao houve conflito — manter esse padrao.
+
+**Docker nao disponivel no sandbox — documentar desde o inicio:**
+- Se o Docker daemon nao estiver disponivel, registrar como impedimento no `sprint-NN.md` no Dia 1, nao como pendencia silenciosa no DoD.
+- Criar uma secao "Validacao pendente fora do sandbox" para que o time saiba o que falta validar manualmente.
+
 ### Sprint 01 (2026-05-28)
 
 - JWT_SECRET padrão no docker-compose deve ser Base64 válido (≥ 256 bits) ou o JwtService precisará de fallback UTF-8.
