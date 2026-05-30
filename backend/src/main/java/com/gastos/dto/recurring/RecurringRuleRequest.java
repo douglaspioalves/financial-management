@@ -4,6 +4,7 @@ import com.gastos.domain.PaymentMethod;
 import com.gastos.domain.RecurringFrequency;
 import com.gastos.domain.SplitRule;
 import com.gastos.domain.TransactionType;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,7 @@ public record RecurringRuleRequest(
         @Positive(message = "O valor deve ser maior que zero.")
         BigDecimal amount,
 
+        @NotBlank(message = "A descrição é obrigatória.")
         @Size(max = 255, message = "A descrição deve ter no máximo 255 caracteres.")
         String description,
 
