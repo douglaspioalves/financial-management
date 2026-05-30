@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Gastos — Protótipo navegável</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Material+Icons+Outlined&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root {
+  --color-primary: #4a7fc4;
+  --color-primary-light: #6b9fd4;
+  --color-primary-dark: #3568a8;
+  --color-income: #7fc4a0;
+  --color-expense: #e8927c;
+  --color-warning: #f0c080;
+  --color-highlight: #b8a9d9;
+  --color-bg: #f4f7fb;
+  --color-bg-card: #ffffff;
+  --color-bg-surface: #eef2f7;
+  --color-text-primary: #1a2332;
+  --color-text-secondary: #546e7a;
+  --color-text-disabled: #9eb0c0;
+  --color-border: #dde4ee;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 8px rgba(74,127,196,0.10);
+  --shadow-md: 0 4px 16px rgba(74,127,196,0.12);
+}
+[data-theme="dark"] {
+  --color-bg: #111827;
+  --color-bg-card: #1f2937;
+  --color-bg-surface: #1a2333;
+  --color-text-primary: #e8f0f8;
+  --color-text-secondary: #94a3b8;
+  --color-text-disabled: #4b5563;
+  --color-border: #2d3f55;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  transition: background 0.25s, color 0.25s;
+}
+/* ── screens ── */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: block; }
+/* ── shared layout ── */
+.page-header {
+  background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-icon {
+  width: 34px; height: 34px;
+  background: var(--color-primary);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px;
+}
+.brand-name { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--color-text-primary); }
+.brand-sub { font-size: 11px; color: var(--color-text-secondary); text-transform: lowercase; letter-spacing: 0.5px; }
+.header-spacer { flex: 1; }
+.icon-btn {
+  border: none; background: var(--color-bg-surface); cursor: pointer;
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-secondary); transition: 0.15s;
+}
+.icon-btn:hover { background: var(--color-border); color: var(--color-primary); }
+.page-content { padding: 20px; max-width: 860px; margin: 0 auto; }
+/* ── month nav ── */
+.month-nav {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.month-label {
+  font-family: var(--font-display); font-size: 20px; font-weight: 600;
+  flex: 1; text-align: center;
+}
+.btn-ghost {
+  border: 1px solid var(--color-border); background: var(--color-bg-card);
+  color: var(--color-primary); cursor: pointer; padding: 7px 14px;
+  border-radius: var(--radius-sm); font-family: var(--font-body);
+  font-weight: 600; font-size: 13px; transition: 0.15s;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-ghost:hover { background: var(--color-bg-surface); }
+/* ── cards grid ── */
+.cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+@media(max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } }
+.summary-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.sc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.sc-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.sc-icon.income { background: rgba(127,196,160,0.18); color: #5aad82; }
+.sc-icon.expense { background: rgba(232,146,124,0.18); color: #c96c52; }
+.sc-icon.balance { background: rgba(74,127,196,0.15); color: var(--color-primary); }
+.sc-icon.card-icon { background: rgba(184,169,217,0.20); color: #8a6db8; }
+.sc-label { font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.sc-amount {
+  font-family: var(--font-display); font-size: 26px; font-weight: 700;
+}
+.sc-amount.positive { color: #5aad82; }
+.sc-amount.negative { color: #c96c52; }
+.sc-amount.neutral { color: var(--color-primary); }
+.sc-variation { font-size: 12px; color: var(--color-text-secondary); margin-top: 4px; }
+/* ── two-col grid ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+@media(max-width: 680px) { .two-col { grid-template-columns: 1fr; } }
+/* ── card ── */
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.card-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+/* ── donut ── */
+.donut-container { display: flex; align-items: center; gap: 16px; }
+.donut-svg { flex-shrink: 0; }
+.category-legend { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { flex: 1; color: var(--color-text-secondary); }
+.legend-pct { font-weight: 700; color: var(--color-text-primary); }
+/* ── recent tx ── */
+.tx-row {
+  display: flex; align-items: center; gap: 12px; padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.tx-row:last-child { border-bottom: none; }
+.tx-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.tx-desc { flex: 1; }
+.tx-desc-name { font-size: 13px; font-weight: 600; }
+.tx-desc-cat { font-size: 11px; color: var(--color-text-secondary); }
+.tx-amount { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
+.tx-amount.pos { color: #5aad82; }
+.tx-amount.neg { color: #c96c52; }
+/* ── shortcuts ── */
+.shortcuts { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width: 520px) { .shortcuts { grid-template-columns: repeat(3, 1fr); } }
+.shortcut {
+  background: var(--color-bg-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 14px 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  cursor: pointer; transition: 0.15s; text-decoration: none; color: inherit;
+}
+.shortcut:hover { border-color: var(--color-primary); background: rgba(74,127,196,0.05); }
+.shortcut-icon { font-size: 22px; color: var(--color-primary); }
+.shortcut-label { font-size: 11px; font-weight: 600; color: var(--color-text-secondary); text-align: center; }
+/* ── tx list ── */
+.tx-card {
+  background: var(--color-bg-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); padding: 14px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  box-shadow: var(--shadow-sm); transition: 0.15s;
+}
+.tx-card:hover { box-shadow: var(--shadow-md); }
+.tx-cat-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  flex-shrink: 0;
+}
+.tx-info { flex: 1; }
+.tx-name { font-size: 14px; font-weight: 600; }
+.tx-meta { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; }
+.tx-right { text-align: right; }
+.tx-right .amount { font-family: var(--font-display); font-size: 17px; font-weight: 700; }
+.tx-person { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--color-bg-surface); color: var(--color-primary);
+  border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 600;
+}
+.chip.income-chip { background: rgba(127,196,160,0.18); color: #5aad82; }
+.chip.expense-chip { background: rgba(232,146,124,0.18); color: #c96c52; }
+.chip.installment { background: rgba(184,169,217,0.22); color: #7a5fb0; }
+/* ── FAB ── */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--color-primary); color: white;
+  border: none; cursor: pointer; font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(74,127,196,0.40); transition: 0.15s;
+}
+.fab:hover { transform: scale(1.05); background: var(--color-primary-dark); }
+/* ── auth ── */
+.auth-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #eef4fb 0%, #f4f7fb 60%, #f0eef8 100%);
+  padding: 20px;
+}
+[data-theme="dark"] .auth-page { background: linear-gradient(135deg, #111827 0%, #1a2333 60%, #1f1a2e 100%); }
+.auth-card {
+  background: var(--color-bg-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 40px 36px;
+  width: 100%; max-width: 400px; box-shadow: var(--shadow-md);
+}
+.auth-logo { text-align: center; margin-bottom: 28px; }
+.auth-logo-icon {
+  width: 56px; height: 56px; background: var(--color-primary);
+  border-radius: 18px; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 28px; color: white; margin-bottom: 12px;
+}
+.auth-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.auth-sub { color: var(--color-text-secondary); font-size: 14px; }
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); font-family: var(--font-body); font-size: 14px;
+  transition: 0.15s; outline: none;
+}
+.form-input:focus { border-color: var(--color-primary); background: var(--color-bg-card); box-shadow: 0 0 0 3px rgba(74,127,196,0.12); }
+.btn-primary {
+  width: 100%; padding: 12px; background: var(--color-primary); color: white;
+  border: none; border-radius: var(--radius-sm); font-family: var(--font-body);
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.15s;
+}
+.btn-primary:hover { background: var(--color-primary-dark); }
+.auth-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--color-text-secondary); }
+.auth-link a { color: var(--color-primary); font-weight: 600; cursor: pointer; text-decoration: none; }
+/* ── settlement ── */
+.settlement-highlight {
+  background: linear-gradient(135deg, rgba(74,127,196,0.12) 0%, rgba(107,159,212,0.08) 100%);
+  border: 1px solid rgba(74,127,196,0.25); border-radius: var(--radius-md);
+  padding: 20px; text-align: center; margin-bottom: 16px;
+}
+.settlement-amount { font-family: var(--font-display); font-size: 36px; font-weight: 700; color: var(--color-primary); }
+.settlement-text { font-size: 14px; color: var(--color-text-secondary); margin-top: 4px; }
+.person-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+@media(max-width: 480px) { .person-cards { grid-template-columns: 1fr; } }
+.person-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; }
+.person-name { font-weight: 700; font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.person-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; }
+.person-row { display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0; border-bottom: 1px solid var(--color-border); }
+.person-row:last-child { border-bottom: none; }
+.person-row .label { color: var(--color-text-secondary); }
+.person-balance { font-family: var(--font-display); font-size: 18px; font-weight: 700; text-align: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+/* ── budget ── */
+.budget-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.budget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.budget-category { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+.budget-pct { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.pct-ok { background: rgba(127,196,160,0.18); color: #5aad82; }
+.pct-warn { background: rgba(240,192,128,0.25); color: #b07c1a; }
+.pct-over { background: rgba(232,146,124,0.18); color: #c96c52; }
+.progress-bar { height: 6px; background: var(--color-border); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.fill-ok { background: var(--color-income); }
+.fill-warn { background: var(--color-warning); }
+.fill-over { background: var(--color-expense); }
+.budget-values { display: flex; justify-content: space-between; font-size: 13px; color: var(--color-text-secondary); }
+/* ── cards ── */
+.cc-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 12px; box-shadow: var(--shadow-sm); }
+.cc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.cc-chip { width: 42px; height: 42px; background: linear-gradient(135deg, #4a7fc4, #6b9fd4); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+.cc-name { font-weight: 700; font-size: 15px; }
+.cc-owner { font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px; }
+.cc-dates { display: flex; gap: 0; border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+.cc-date-item { flex: 1; padding: 10px 14px; text-align: center; }
+.cc-date-item:first-child { border-right: 1px solid var(--color-border); }
+.cc-date-label { font-size: 10px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+.cc-date-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--color-primary); }
+/* ── recurring ── */
+.rule-card { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 10px; box-shadow: var(--shadow-sm); }
+.rule-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.rule-info { flex: 1; }
+.rule-name { font-weight: 700; font-size: 14px; }
+.rule-cat { font-size: 12px; color: var(--color-text-secondary); }
+.rule-amount { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.rule-amount.pos { color: #5aad82; }
+.rule-amount.neg { color: #c96c52; }
+.rule-meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--color-text-secondary); align-items: center; }
+.freq-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(74,127,196,0.12); color: var(--color-primary); border-radius: 999px; padding: 3px 9px; font-size: 11px; font-weight: 600; }
+/* ── alert / banner ── */
+.alert {
+  border-radius: var(--radius-md); padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;
+  font-size: 13px;
+}
+.alert.info { background: rgba(74,127,196,0.10); border: 1px solid rgba(74,127,196,0.22); color: var(--color-primary); }
+.alert.warning { background: rgba(240,192,128,0.20); border: 1px solid rgba(240,192,128,0.45); color: #7a5a10; }
+[data-theme="dark"] .alert.warning { color: #e8c46a; }
+/* ── empty state ── */
+.empty-state { text-align: center; padding: 48px 20px; }
+.empty-icon { font-size: 52px; color: var(--color-text-disabled); margin-bottom: 14px; }
+.empty-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.empty-sub { font-size: 14px; color: var(--color-text-secondary); }
+/* ── section title ── */
+.section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.section-title .material-icons { font-size: 20px; color: var(--color-primary); }
+/* ── summary bar ── */
+.summary-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+.summary-bar .summary-card { flex: 1; margin: 0; }
+/* ── export menu ── */
+.export-menu {
+  position: absolute; top: 48px; right: 0;
+  background: var(--color-bg-card); border: 1px solid var(--color-border);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  min-width: 180px; z-index: 200; overflow: hidden;
+}
+.export-item {
+  padding: 11px 16px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 600; color: var(--color-text-primary); transition: 0.15s;
+}
+.export-item:hover { background: var(--color-bg-surface); color: var(--color-primary); }
+.export-wrap { position: relative; }
+/* ── info legend ── */
+.legend-card { background: rgba(74,127,196,0.08); border: 1px solid rgba(74,127,196,0.18); border-radius: var(--radius-md); padding: 14px 16px; font-size: 12px; color: var(--color-text-secondary); display: flex; align-items: flex-start; gap: 8px; }
+/* ── overall budget ── */
+.budget-overall { background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm); }
+.overall-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.overall-label { font-size: 13px; color: var(--color-text-secondary); }
+.overall-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.overall-limit { font-family: var(--font-display); font-size: 16px; color: var(--color-text-secondary); }
+/* ─────────────────────────────────────────────── */
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ LOGIN ══════════════════ -->
+<div id="screen-login" class="screen active">
+<div class="auth-page">
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="auth-logo-icon"><span class="material-icons">account_balance_wallet</span></div>
+    <div class="auth-title">Gestor de Gastos</div>
+    <div class="auth-sub">Controle de gastos do casal</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">E-mail</label>
+    <input class="form-input" type="email" placeholder="seu@email.com" value="ana@exemplo.com">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Senha</label>
+    <input class="form-input" type="password" placeholder="Mínimo 8 caracteres" value="12345678">
+  </div>
+  <button class="btn-primary" onclick="go('dashboard')">Entrar</button>
+  <div class="auth-link">Não tem conta? <a onclick="go('register')">Cadastrar-se</a></div>
+</div>
+</div>
+</div>
+
+<!-- ══════════════════ REGISTER ══════════════════ -->
+<div id="screen-register" class="screen">
+<div class="auth-page">
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="auth-logo-icon"><span class="material-icons">person_add</span></div>
+    <div class="auth-title">Criar conta</div>
+    <div class="auth-sub">Gestor de Gastos do casal</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Nome</label>
+    <input class="form-input" type="text" placeholder="Seu nome completo" value="Ana Silva">
+  </div>
+  <div class="form-group">
+    <label class="form-label">E-mail</label>
+    <input class="form-input" type="email" placeholder="seu@email.com" value="ana@exemplo.com">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Senha</label>
+    <input class="form-input" type="password" placeholder="Mínimo 8 caracteres">
+  </div>
+  <button class="btn-primary" onclick="go('dashboard')">Criar conta</button>
+  <div class="auth-link">Já tem conta? <a onclick="go('login')">Entrar</a></div>
+</div>
+</div>
+</div>
+
+<!-- ══════════════════ DASHBOARD ══════════════════ -->
+<div id="screen-dashboard" class="screen">
+<div class="page-header">
+  <div class="brand">
+    <div class="brand-icon"><span class="material-icons" style="font-size:18px">account_balance_wallet</span></div>
+    <div><div class="brand-name">Gastos do Casal</div><div class="brand-sub">dashboard</div></div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" onclick="toggleTheme()" title="Alternar tema"><span class="material-icons">dark_mode</span></button>
+  <button class="icon-btn" onclick="go('login')" title="Sair"><span class="material-icons">logout</span></button>
+</div>
+<div class="page-content">
+  <div class="month-nav">
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_left</span></button>
+    <div class="month-label">maio de 2026</div>
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_right</span></button>
+  </div>
+
+  <!-- summary cards -->
+  <div class="cards-grid">
+    <div class="summary-card">
+      <div class="sc-header">
+        <div class="sc-icon income"><span class="material-icons" style="font-size:20px">trending_up</span></div>
+        <div class="sc-label">Receitas</div>
+      </div>
+      <div class="sc-amount positive">R$&nbsp;8.500,00</div>
+      <div class="sc-variation">↑ 12% em relação a abril</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-header">
+        <div class="sc-icon expense"><span class="material-icons" style="font-size:20px">trending_down</span></div>
+        <div class="sc-label">Despesas</div>
+      </div>
+      <div class="sc-amount negative">R$&nbsp;3.240,00</div>
+      <div class="sc-variation">↓ 8% em relação a abril</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-header">
+        <div class="sc-icon balance"><span class="material-icons" style="font-size:20px">account_balance</span></div>
+        <div class="sc-label">Saldo</div>
+      </div>
+      <div class="sc-amount positive">R$&nbsp;5.260,00</div>
+      <div class="sc-variation">Saldo do mês</div>
+    </div>
+  </div>
+
+  <!-- two col: donut + recent -->
+  <div class="two-col">
+    <!-- donut -->
+    <div class="card">
+      <div class="card-title"><span class="material-icons" style="font-size:18px;color:var(--color-primary)">donut_small</span> Despesas por categoria</div>
+      <div class="donut-container">
+        <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="38" fill="none" stroke="var(--color-border)" stroke-width="14"/>
+          <!-- segments: alimentação 38%, transporte 22%, lazer 20%, saúde 12%, outros 8% -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#e8927c" stroke-width="14"
+            stroke-dasharray="89.5 149.1" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#4a7fc4" stroke-width="14"
+            stroke-dasharray="52" stroke-dashoffset="-89.5" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#b8a9d9" stroke-width="14"
+            stroke-dasharray="47.1" stroke-dashoffset="-141.5" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#7fc4a0" stroke-width="14"
+            stroke-dasharray="28.3" stroke-dashoffset="-188.6" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#f0c080" stroke-width="14"
+            stroke-dasharray="18.8" stroke-dashoffset="-216.9" transform="rotate(-90 50 50)"/>
+          <text x="50" y="46" text-anchor="middle" font-family="'Fraunces',serif" font-size="11" font-weight="700" fill="var(--color-text-primary)">R$</text>
+          <text x="50" y="59" text-anchor="middle" font-family="'Fraunces',serif" font-size="10" font-weight="700" fill="var(--color-text-primary)">3.240</text>
+        </svg>
+        <div class="category-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#e8927c"></div><span class="legend-name">Alimentação</span><span class="legend-pct">38%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4a7fc4"></div><span class="legend-name">Transporte</span><span class="legend-pct">22%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#b8a9d9"></div><span class="legend-name">Lazer</span><span class="legend-pct">20%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7fc4a0"></div><span class="legend-name">Saúde</span><span class="legend-pct">12%</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f0c080"></div><span class="legend-name">Outros</span><span class="legend-pct">8%</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- recent -->
+    <div class="card">
+      <div class="card-title"><span class="material-icons" style="font-size:18px;color:var(--color-primary)">receipt_long</span> Lançamentos recentes</div>
+      <div class="tx-row">
+        <div class="tx-icon" style="background:rgba(232,146,124,0.18)">🛒</div>
+        <div class="tx-desc"><div class="tx-desc-name">Supermercado Extra</div><div class="tx-desc-cat">Alimentação · 28/05</div></div>
+        <div class="tx-amount neg">− R$ 320,00</div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-icon" style="background:rgba(127,196,160,0.18)">💰</div>
+        <div class="tx-desc"><div class="tx-desc-name">Salário Ana</div><div class="tx-desc-cat">Receita · 25/05</div></div>
+        <div class="tx-amount pos">+ R$ 6.000,00</div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-icon" style="background:rgba(74,127,196,0.15)">🚌</div>
+        <div class="tx-desc"><div class="tx-desc-name">Uber — trabalho</div><div class="tx-desc-cat">Transporte · 24/05</div></div>
+        <div class="tx-amount neg">− R$ 45,00</div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-icon" style="background:rgba(184,169,217,0.22)">🎬</div>
+        <div class="tx-desc"><div class="tx-desc-name">Netflix</div><div class="tx-desc-cat">Lazer · 22/05 · 3/6</div></div>
+        <div class="tx-amount neg">− R$ 26,90</div>
+      </div>
+      <div class="tx-row">
+        <div class="tx-icon" style="background:rgba(127,196,160,0.18)">💊</div>
+        <div class="tx-desc"><div class="tx-desc-name">Farmácia</div><div class="tx-desc-cat">Saúde · 20/05</div></div>
+        <div class="tx-amount neg">− R$ 87,50</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- shortcuts -->
+  <div class="section-title"><span class="material-icons">apps</span> Navegar</div>
+  <div class="shortcuts">
+    <a class="shortcut" onclick="go('transactions')"><span class="material-icons shortcut-icon">receipt_long</span><span class="shortcut-label">Lançamentos</span></a>
+    <a class="shortcut" onclick="go('cards')"><span class="material-icons shortcut-icon">credit_card</span><span class="shortcut-label">Cartões</span></a>
+    <a class="shortcut" onclick="go('recurring')"><span class="material-icons shortcut-icon">repeat</span><span class="shortcut-label">Recorrências</span></a>
+    <a class="shortcut" onclick="go('budget')"><span class="material-icons shortcut-icon">savings</span><span class="shortcut-label">Orçamentos</span></a>
+    <a class="shortcut" onclick="go('settlement')"><span class="material-icons shortcut-icon">handshake</span><span class="shortcut-label">Acerto</span></a>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════ TRANSACTIONS ══════════════════ -->
+<div id="screen-transactions" class="screen">
+<div class="page-header">
+  <button class="icon-btn" onclick="go('dashboard')"><span class="material-icons">arrow_back</span></button>
+  <div style="font-weight:700;font-size:16px">Lançamentos</div>
+  <div class="header-spacer"></div>
+  <div class="export-wrap">
+    <button class="icon-btn" onclick="toggleExport()" title="Exportar"><span class="material-icons">file_download</span></button>
+    <div id="export-menu" class="export-menu" style="display:none">
+      <div class="export-item" onclick="closeExport()"><span class="material-icons" style="font-size:18px;color:#5aad82">table_chart</span>Exportar CSV</div>
+      <div class="export-item" onclick="closeExport()"><span class="material-icons" style="font-size:18px;color:#4a7fc4">grid_on</span>Exportar Excel</div>
+    </div>
+  </div>
+  <button class="icon-btn" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
+</div>
+<div class="page-content">
+  <div class="month-nav">
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_left</span></button>
+    <div class="month-label">maio de 2026</div>
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_right</span></button>
+  </div>
+
+  <!-- summary bar -->
+  <div class="summary-bar">
+    <div class="summary-card">
+      <div class="sc-label">Receitas</div>
+      <div class="sc-amount positive" style="font-size:20px">+ R$ 8.500,00</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">Despesas</div>
+      <div class="sc-amount negative" style="font-size:20px">− R$ 3.240,00</div>
+    </div>
+  </div>
+
+  <!-- transaction list -->
+  <!-- installment group -->
+  <div style="margin-bottom:10px">
+    <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Parceladas</div>
+    <div class="tx-card" style="flex-direction:column;align-items:stretch;gap:0">
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--color-border)">
+        <div class="tx-cat-icon" style="background:rgba(184,169,217,0.22)">📱</div>
+        <div class="tx-info">
+          <div class="tx-name">iPhone 16</div>
+          <div class="tx-meta"><span>Cartão Nubank · Lazer</span></div>
+        </div>
+        <div class="tx-right">
+          <div class="amount neg" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#c96c52">− R$ 600,00</div>
+          <div style="text-align:right;margin-top:3px"><span class="chip installment">3/12</span></div>
+        </div>
+      </div>
+      <div style="padding-top:10px;font-size:12px;color:var(--color-text-secondary)">
+        <div style="display:flex;justify-content:space-between;padding:4px 0"><span>Parcela 3 — mai/2026</span><span>R$ 600,00</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--color-text-disabled)"><span>Parcela 4 — jun/2026</span><span>R$ 600,00</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--color-text-disabled)"><span>... mais 8 parcelas</span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">À vista</div>
+  <div class="tx-card">
+    <div class="tx-cat-icon" style="background:rgba(232,146,124,0.18)">🛒</div>
+    <div class="tx-info">
+      <div class="tx-name">Supermercado Extra</div>
+      <div class="tx-meta"><span>28/05/2026</span><span>·</span><span>PIX</span><span>·</span><span class="chip" style="padding:1px 7px;font-size:10px">50/50</span></div>
+    </div>
+    <div class="tx-right">
+      <div class="amount" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#c96c52">− R$ 320,00</div>
+      <div class="tx-person">Ana</div>
+    </div>
+  </div>
+
+  <div class="tx-card">
+    <div class="tx-cat-icon" style="background:rgba(127,196,160,0.18)">💰</div>
+    <div class="tx-info">
+      <div class="tx-name">Salário Ana</div>
+      <div class="tx-meta"><span>25/05/2026</span><span>·</span><span>Transferência</span><span>·</span><span class="chip income-chip" style="padding:1px 7px;font-size:10px">Só Ana</span></div>
+    </div>
+    <div class="tx-right">
+      <div class="amount" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#5aad82">+ R$ 6.000,00</div>
+      <div class="tx-person">Ana</div>
+    </div>
+  </div>
+
+  <div class="tx-card">
+    <div class="tx-cat-icon" style="background:rgba(74,127,196,0.15)">🚌</div>
+    <div class="tx-info">
+      <div class="tx-name">Uber — trabalho</div>
+      <div class="tx-meta"><span>24/05/2026</span><span>·</span><span>Débito</span><span>·</span><span class="chip" style="padding:1px 7px;font-size:10px">Proporcional</span></div>
+    </div>
+    <div class="tx-right">
+      <div class="amount" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#c96c52">− R$ 45,00</div>
+      <div class="tx-person">Carlos</div>
+    </div>
+  </div>
+
+  <div class="tx-card">
+    <div class="tx-cat-icon" style="background:rgba(184,169,217,0.22)">🎬</div>
+    <div class="tx-info">
+      <div class="tx-name">Netflix</div>
+      <div class="tx-meta"><span>22/05/2026</span><span>·</span><span>Cartão Nubank</span><span>·</span><span class="chip" style="padding:1px 7px;font-size:10px">50/50</span></div>
+    </div>
+    <div class="tx-right">
+      <div class="amount" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#c96c52">− R$ 26,90</div>
+      <div class="tx-person">Carlos</div>
+    </div>
+  </div>
+
+  <div class="tx-card">
+    <div class="tx-cat-icon" style="background:rgba(127,196,160,0.18)">💊</div>
+    <div class="tx-info">
+      <div class="tx-name">Farmácia</div>
+      <div class="tx-meta"><span>20/05/2026</span><span>·</span><span>Dinheiro</span><span>·</span><span class="chip expense-chip" style="padding:1px 7px;font-size:10px">Só Carlos</span></div>
+    </div>
+    <div class="tx-right">
+      <div class="amount" style="font-family:var(--font-display);font-size:17px;font-weight:700;color:#c96c52">− R$ 87,50</div>
+      <div class="tx-person">Ana</div>
+    </div>
+  </div>
+</div>
+<button class="fab" onclick="alert('Diálogo de novo lançamento')"><span class="material-icons">add</span></button>
+</div>
+
+<!-- ══════════════════ CARDS ══════════════════ -->
+<div id="screen-cards" class="screen">
+<div class="page-header">
+  <button class="icon-btn" onclick="go('dashboard')"><span class="material-icons">arrow_back</span></button>
+  <div style="font-weight:700;font-size:16px">Cartões</div>
+  <div class="header-spacer"></div>
+  <button class="btn-ghost" onclick="alert('Diálogo de novo cartão')"><span class="material-icons" style="font-size:16px">add</span> Novo cartão</button>
+</div>
+<div class="page-content">
+  <div class="section-title"><span class="material-icons">credit_card</span> Seus cartões</div>
+
+  <div class="cc-card">
+    <div class="cc-top">
+      <div class="cc-chip"><span class="material-icons">credit_card</span></div>
+      <div>
+        <div class="cc-name">Nubank Platinum</div>
+        <div class="cc-owner"><span class="material-icons" style="font-size:14px">person</span> Ana</div>
+      </div>
+      <div class="header-spacer"></div>
+      <button class="icon-btn"><span class="material-icons" style="font-size:18px">edit</span></button>
+      <button class="icon-btn" style="color:#c96c52"><span class="material-icons" style="font-size:18px">delete_outline</span></button>
+    </div>
+    <div class="cc-dates">
+      <div class="cc-date-item">
+        <div class="cc-date-label">Fechamento</div>
+        <div class="cc-date-value">15</div>
+      </div>
+      <div class="cc-date-item">
+        <div class="cc-date-label">Vencimento</div>
+        <div class="cc-date-value">22</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cc-card">
+    <div class="cc-top">
+      <div class="cc-chip" style="background:linear-gradient(135deg,#7fc4a0,#5aad82)"><span class="material-icons">credit_card</span></div>
+      <div>
+        <div class="cc-name">Inter Black</div>
+        <div class="cc-owner"><span class="material-icons" style="font-size:14px">person</span> Carlos</div>
+      </div>
+      <div class="header-spacer"></div>
+      <button class="icon-btn"><span class="material-icons" style="font-size:18px">edit</span></button>
+      <button class="icon-btn" style="color:#c96c52"><span class="material-icons" style="font-size:18px">delete_outline</span></button>
+    </div>
+    <div class="cc-dates">
+      <div class="cc-date-item">
+        <div class="cc-date-label">Fechamento</div>
+        <div class="cc-date-value">10</div>
+      </div>
+      <div class="cc-date-item">
+        <div class="cc-date-label">Vencimento</div>
+        <div class="cc-date-value">17</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════ BUDGET ══════════════════ -->
+<div id="screen-budget" class="screen">
+<div class="page-header">
+  <div class="brand">
+    <div class="brand-icon"><span class="material-icons" style="font-size:18px">account_balance_wallet</span></div>
+    <div><div class="brand-name">Gastos do Casal</div><div class="brand-sub">orçamentos</div></div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
+  <button class="icon-btn" onclick="go('dashboard')"><span class="material-icons">home</span></button>
+</div>
+<div class="page-content">
+  <div class="month-nav">
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_left</span></button>
+    <div class="month-label">maio de 2026</div>
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_right</span></button>
+  </div>
+
+  <!-- overall -->
+  <div class="budget-overall">
+    <div class="overall-row">
+      <div class="overall-label">Total gasto</div>
+      <div class="overall-label">Limite total</div>
+    </div>
+    <div class="overall-row">
+      <div class="overall-value" style="color:#c96c52">R$ 3.240,00</div>
+      <div class="overall-limit">R$ 4.500,00</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill fill-warn" style="width:72%"></div></div>
+    <div style="font-size:12px;font-weight:700;color:#b07c1a;text-align:right">72% utilizado</div>
+  </div>
+
+  <!-- budgets -->
+  <div class="budget-card">
+    <div class="budget-header">
+      <div class="budget-category"><div style="width:10px;height:10px;border-radius:50%;background:#e8927c"></div>Alimentação</div>
+      <span class="budget-pct pct-over">89%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill fill-over" style="width:89%"></div></div>
+    <div class="budget-values"><span>Gasto: <strong>R$ 1.245,00</strong></span><span>Limite: R$ 1.400,00</span></div>
+    <div style="font-size:12px;color:#c96c52;margin-top:6px;display:flex;align-items:center;gap:4px"><span class="material-icons" style="font-size:14px">warning_amber</span>Restam R$ 155,00</div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-header">
+      <div class="budget-category"><div style="width:10px;height:10px;border-radius:50%;background:#4a7fc4"></div>Transporte</div>
+      <span class="budget-pct pct-ok">57%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill fill-ok" style="width:57%"></div></div>
+    <div class="budget-values"><span>Gasto: <strong>R$ 712,50</strong></span><span>Limite: R$ 1.250,00</span></div>
+    <div style="font-size:12px;color:#5aad82;margin-top:6px;display:flex;align-items:center;gap:4px"><span class="material-icons" style="font-size:14px">check_circle_outline</span>Restam R$ 537,50</div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-header">
+      <div class="budget-category"><div style="width:10px;height:10px;border-radius:50%;background:#b8a9d9"></div>Lazer</div>
+      <span class="budget-pct pct-warn">75%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill fill-warn" style="width:75%"></div></div>
+    <div class="budget-values"><span>Gasto: <strong>R$ 637,50</strong></span><span>Limite: R$ 850,00</span></div>
+    <div style="font-size:12px;color:#b07c1a;margin-top:6px;display:flex;align-items:center;gap:4px"><span class="material-icons" style="font-size:14px">info_outline</span>Restam R$ 212,50</div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-header">
+      <div class="budget-category"><div style="width:10px;height:10px;border-radius:50%;background:#7fc4a0"></div>Saúde</div>
+      <span class="budget-pct pct-over">104%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill fill-over" style="width:100%"></div></div>
+    <div class="budget-values"><span>Gasto: <strong>R$ 520,00</strong></span><span>Limite: R$ 500,00</span></div>
+    <div style="font-size:12px;color:#c96c52;margin-top:6px;display:flex;align-items:center;gap:4px"><span class="material-icons" style="font-size:14px">error_outline</span>Excedido em R$ 20,00</div>
+  </div>
+</div>
+<button class="fab" onclick="alert('Diálogo de novo orçamento')"><span class="material-icons">add</span></button>
+</div>
+
+<!-- ══════════════════ SETTLEMENT ══════════════════ -->
+<div id="screen-settlement" class="screen">
+<div class="page-header">
+  <div class="brand">
+    <div class="brand-icon"><span class="material-icons" style="font-size:18px">account_balance_wallet</span></div>
+    <div><div class="brand-name">Gastos do Casal</div><div class="brand-sub">acerto de contas</div></div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
+  <button class="icon-btn" onclick="go('dashboard')"><span class="material-icons">home</span></button>
+</div>
+<div class="page-content">
+  <div class="month-nav">
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_left</span></button>
+    <div class="month-label">maio de 2026</div>
+    <button class="btn-ghost"><span class="material-icons" style="font-size:18px">chevron_right</span></button>
+  </div>
+
+  <!-- main card -->
+  <div class="card" style="margin-bottom:14px">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--color-text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Total de despesas em maio</div>
+      <div style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--color-text-primary)">R$ 3.240,00</div>
+    </div>
+    <div class="settlement-highlight">
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px">Resultado do acerto</div>
+      <div class="settlement-amount">R$ 620,00</div>
+      <div class="settlement-text"><strong>Carlos</strong> deve pagar <strong>R$ 620,00</strong> para <strong>Ana</strong></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px">Ana pagou R$ 1.940,00 · deveria pagar R$ 1.320,00</div>
+    </div>
+  </div>
+
+  <!-- person cards -->
+  <div class="person-cards">
+    <div class="person-card">
+      <div class="person-name"><div class="person-avatar" style="background:#4a7fc4">A</div>Ana</div>
+      <div class="person-row"><span class="label">Pagou</span><span style="font-weight:700">R$ 1.940,00</span></div>
+      <div class="person-row"><span class="label">Deveria pagar</span><span>R$ 1.320,00</span></div>
+      <div class="person-balance positive">+&nbsp;R$ 620,00</div>
+    </div>
+    <div class="person-card">
+      <div class="person-name"><div class="person-avatar" style="background:#7fc4a0">C</div>Carlos</div>
+      <div class="person-row"><span class="label">Pagou</span><span style="font-weight:700">R$ 700,00</span></div>
+      <div class="person-row"><span class="label">Deveria pagar</span><span>R$ 1.320,00</span></div>
+      <div class="person-balance" style="color:#c96c52">−&nbsp;R$ 620,00</div>
+    </div>
+  </div>
+
+  <div class="legend-card">
+    <span class="material-icons" style="font-size:18px;flex-shrink:0">info_outline</span>
+    <span>Divisão <strong>50/50</strong> aplicada para despesas simples. Receitas individuais de Ana (R$ 6.000) e Carlos (R$ 2.500) foram usadas na divisão <strong>proporcional</strong> — Ana paga 70,6%, Carlos paga 29,4%.</span>
+  </div>
+
+  <!-- example: pending proportional state (alternate) -->
+  <div style="margin-top:20px">
+    <div class="section-title" style="font-size:13px;color:var(--color-text-secondary);font-weight:600">Exemplo — estado pendente (abril de 2026)</div>
+    <div class="alert warning">
+      <span class="material-icons" style="font-size:18px;flex-shrink:0">pending_actions</span>
+      <span>Receitas individuais de abril de 2026 ainda não foram lançadas. Cadastre as receitas de <strong>Ana</strong> e <strong>Carlos</strong> para calcular a divisão proporcional.</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════ RECURRING ══════════════════ -->
+<div id="screen-recurring" class="screen">
+<div class="page-header">
+  <div class="brand">
+    <div class="brand-icon"><span class="material-icons" style="font-size:18px">account_balance_wallet</span></div>
+    <div><div class="brand-name">Gastos do Casal</div><div class="brand-sub">recorrências</div></div>
+  </div>
+  <div class="header-spacer"></div>
+  <button class="icon-btn" onclick="toggleTheme()"><span class="material-icons">dark_mode</span></button>
+  <button class="icon-btn" onclick="go('dashboard')"><span class="material-icons">home</span></button>
+</div>
+<div class="page-content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:700">Lançamentos Recorrentes</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-top:2px">Gerados automaticamente na data agendada</div>
+    </div>
+    <button class="btn-ghost" onclick="alert('Diálogo de nova regra recorrente')"><span class="material-icons" style="font-size:16px">add</span> Nova Regra</button>
+  </div>
+
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="tx-cat-icon" style="background:rgba(184,169,217,0.22);width:38px;height:38px;font-size:20px">🎬</div>
+      <div class="rule-info">
+        <div class="rule-name">Netflix</div>
+        <div class="rule-cat">Lazer</div>
+      </div>
+      <div class="rule-amount neg">− R$ 26,90</div>
+    </div>
+    <div class="rule-meta">
+      <span class="freq-badge"><span class="material-icons" style="font-size:14px">calendar_month</span>Mensal</span>
+      <span>Próxima: 01/06/2026</span>
+      <span>·</span>
+      <span>50/50 · Carlos</span>
+      <span>·</span>
+      <span>Cartão Inter Black</span>
+    </div>
+  </div>
+
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="tx-cat-icon" style="background:rgba(127,196,160,0.18);width:38px;height:38px;font-size:20px">💰</div>
+      <div class="rule-info">
+        <div class="rule-name">Salário Ana</div>
+        <div class="rule-cat">Receita</div>
+      </div>
+      <div class="rule-amount pos">+ R$ 6.000,00</div>
+    </div>
+    <div class="rule-meta">
+      <span class="freq-badge"><span class="material-icons" style="font-size:14px">calendar_month</span>Mensal</span>
+      <span>Próxima: 25/06/2026</span>
+      <span>·</span>
+      <span>Só Ana</span>
+      <span>·</span>
+      <span>Transferência</span>
+    </div>
+  </div>
+
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="tx-cat-icon" style="background:rgba(74,127,196,0.15);width:38px;height:38px;font-size:20px">🌐</div>
+      <div class="rule-info">
+        <div class="rule-name">Internet fibra</div>
+        <div class="rule-cat">Moradia</div>
+      </div>
+      <div class="rule-amount neg">− R$ 110,00</div>
+    </div>
+    <div class="rule-meta">
+      <span class="freq-badge"><span class="material-icons" style="font-size:14px">calendar_month</span>Mensal</span>
+      <span>Próxima: 05/06/2026</span>
+      <span>·</span>
+      <span>50/50 · Ana</span>
+      <span>·</span>
+      <span>PIX</span>
+    </div>
+  </div>
+
+  <div class="rule-card">
+    <div class="rule-header">
+      <div class="tx-cat-icon" style="background:rgba(127,196,160,0.18);width:38px;height:38px;font-size:20px">💊</div>
+      <div class="rule-info">
+        <div class="rule-name">Plano de saúde</div>
+        <div class="rule-cat">Saúde</div>
+      </div>
+      <div class="rule-amount neg">− R$ 380,00</div>
+    </div>
+    <div class="rule-meta">
+      <span class="freq-badge"><span class="material-icons" style="font-size:14px">calendar_month</span>Mensal</span>
+      <span>Próxima: 10/06/2026</span>
+      <span>·</span>
+      <span>50/50 · Ana</span>
+      <span>·</span>
+      <span>Débito</span>
+    </div>
+  </div>
+</div>
+<button class="fab" onclick="alert('Diálogo de nova regra recorrente')"><span class="material-icons">add</span></button>
+</div>
+
+<!-- ══════════════════ SCRIPTS ══════════════════ -->
+<script>
+function go(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  window.scrollTo(0, 0);
+  closeExport();
+}
+
+function toggleTheme() {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+}
+
+function toggleExport() {
+  const m = document.getElementById('export-menu');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+
+function closeExport() {
+  const m = document.getElementById('export-menu');
+  if (m) m.style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  const wrap = e.target.closest('.export-wrap');
+  if (!wrap) closeExport();
+});
+</script>
+</body>
+</html>
