@@ -1,0 +1,221 @@
+<div class="recurring-page">
+  <!-- Header -->
+  <header class="recurring-header">
+    <div class="brand">
+      <div class="brand__logo">G</div>
+      <div>
+        <b class="brand__name">Gastos do Casal</b>
+        <small class="brand__sub">recorrências</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button
+              [matTooltip]="theme.isDark() ? 'Modo claro' : 'Modo escuro'"
+              (click)="theme.toggle()">
+        <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <a routerLink="/dashboard" mat-icon-button matTooltip="Painel">
+        <mat-icon>home</mat-icon>
+      </a>
+    </div>
+  </header>
+
+  <!-- Barra de progresso -->
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+  }
+
+  <!-- Título e botão nova regra -->
+  <div class="page-title-row">
+    <div>
+      <h1 class="page-title">Lançamentos Recorrentes</h1>
+      <p class="page-subtitle">Gerencie cobranças e receitas que se repetem automaticamente.</p>
+    </div>
+    <button mat-flat-button class="btn-new" (click)="openNewForm()">
+      <mat-icon>add</mat-icon>
+      Nova Regra
+    </button>
+  </div>
+
+  <!-- Conteúdo -->
+  <div class="recurring-content">
+
+    @if (!loading() && rules().length === 0) {
+      <!-- Empty state -->
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <mat-icon>repeat</mat-icon>
+        </div>
+        <p class="empty-state__title">Nenhuma regra recorrente cadastrada.</p>
+        <p class="empty-state__sub">Clique em "Nova Regra" para automatizar lançamentos mensais, semanais ou anuais.</p>
+        <button mat-flat-button class="btn-new btn-new--empty" (click)="openNewForm()">
+          <mat-icon>add</mat-icon>
+          Criar primeira regra
+        </button>
+      </div>
+
+    } @else if (rules().length > 0) {
+
+      <!-- Tabela desktop -->
+      <div class="table-container">
+        <table mat-table [dataSource]="rules()" class="recurring-table">
+
+          <!-- Descrição -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Descrição</th>
+            <td mat-cell *matCellDef="let rule">
+              <div class="cell-desc">
+                <span class="cell-desc__name">{{ rule.description }}</span>
+                <span class="cell-desc__cat">{{ rule.categoryName }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Tipo -->
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Tipo</th>
+            <td mat-cell *matCellDef="let rule">
+              <span
+                class="type-chip"
+                [class.type-chip--expense]="rule.type === 'EXPENSE'"
+                [class.type-chip--income]="rule.type === 'INCOME'"
+              >
+                <mat-icon class="type-chip__icon">
+                  {{ rule.type === 'INCOME' ? 'trending_up' : 'trending_down' }}
+                </mat-icon>
+                {{ rule.type === 'INCOME' ? 'Receita' : 'Despesa' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Valor -->
+          <ng-container matColumnDef="amount">
+            <th mat-header-cell *matHeaderCellDef class="col-right">Valor</th>
+            <td mat-cell *matCellDef="let rule" class="col-right">
+              <span
+                class="amount"
+                [class.amount--income]="rule.type === 'INCOME'"
+                [class.amount--expense]="rule.type === 'EXPENSE'"
+              >
+                {{ rule.type === 'INCOME' ? '+' : '−' }}{{ formatCurrency(rule.amount) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <!-- Frequência -->
+          <ng-container matColumnDef="frequency">
+            <th mat-header-cell *matHeaderCellDef>Frequência</th>
+            <td mat-cell *matCellDef="let rule">
+              <span class="freq-badge">{{ frequencyLabel(rule.frequency) }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Próxima data -->
+          <ng-container matColumnDef="nextDate">
+            <th mat-header-cell *matHeaderCellDef>Próxima data</th>
+            <td mat-cell *matCellDef="let rule">
+              <span class="date-text">{{ formatDate(rule.nextDate) }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Divisão -->
+          <ng-container matColumnDef="splitRule">
+            <th mat-header-cell *matHeaderCellDef>Divisão</th>
+            <td mat-cell *matCellDef="let rule">
+              <span class="split-text">{{ splitRuleLabel(rule.splitRule) }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Pago por -->
+          <ng-container matColumnDef="paidBy">
+            <th mat-header-cell *matHeaderCellDef>Pago por</th>
+            <td mat-cell *matCellDef="let rule">
+              <span class="person-text">{{ rule.paidByPersonName }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Ações -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="col-center">Ações</th>
+            <td mat-cell *matCellDef="let rule" class="col-center">
+              <button
+                mat-icon-button
+                (click)="confirmDeactivate(rule)"
+                matTooltip="Desativar regra"
+                class="action-btn action-btn--danger"
+                aria-label="Desativar regra recorrente"
+              >
+                <mat-icon>stop_circle</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+        </table>
+      </div>
+
+      <!-- Cards mobile -->
+      <div class="cards-mobile">
+        @for (rule of rules(); track rule.id) {
+          <div class="rule-card">
+            <div class="rule-card__header">
+              <div class="rule-card__info">
+                <span class="rule-card__name">{{ rule.description }}</span>
+                <span class="rule-card__cat">{{ rule.categoryName }}</span>
+              </div>
+              <div class="rule-card__header-right">
+                <span
+                  class="type-chip"
+                  [class.type-chip--expense]="rule.type === 'EXPENSE'"
+                  [class.type-chip--income]="rule.type === 'INCOME'"
+                >
+                  {{ rule.type === 'INCOME' ? 'Receita' : 'Despesa' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="rule-card__amount"
+                 [class.amount--income]="rule.type === 'INCOME'"
+                 [class.amount--expense]="rule.type === 'EXPENSE'">
+              {{ rule.type === 'INCOME' ? '+' : '−' }}{{ formatCurrency(rule.amount) }}
+            </div>
+
+            <div class="rule-card__meta">
+              <div class="rule-card__meta-item">
+                <mat-icon class="meta-icon">schedule</mat-icon>
+                <span>{{ frequencyLabel(rule.frequency) }} · próximo {{ formatDate(rule.nextDate) }}</span>
+              </div>
+              <div class="rule-card__meta-item">
+                <mat-icon class="meta-icon">person</mat-icon>
+                <span>{{ rule.paidByPersonName }} · {{ splitRuleLabel(rule.splitRule) }}</span>
+              </div>
+            </div>
+
+            <div class="rule-card__actions">
+              <button
+                mat-stroked-button
+                class="btn-deactivate"
+                (click)="confirmDeactivate(rule)"
+              >
+                <mat-icon>stop_circle</mat-icon>
+                Desativar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- FAB -->
+  <button
+    mat-fab
+    class="fab-new"
+    (click)="openNewForm()"
+    matTooltip="Nova regra recorrente"
+    aria-label="Adicionar nova regra recorrente"
+  >
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

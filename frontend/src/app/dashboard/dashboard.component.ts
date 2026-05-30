@@ -238,6 +238,18 @@ import {
             </div>
             <span class="shortcut-card__label">Cartões</span>
           </a>
+          <a routerLink="/recurring" class="shortcut-card">
+            <div class="shortcut-card__icon shortcut-card__icon--mint">
+              <mat-icon>repeat</mat-icon>
+            </div>
+            <span class="shortcut-card__label">Recorrências</span>
+          </a>
+          <a routerLink="/budget" class="shortcut-card">
+            <div class="shortcut-card__icon shortcut-card__icon--sand">
+              <mat-icon>savings</mat-icon>
+            </div>
+            <span class="shortcut-card__label">Orçamentos</span>
+          </a>
           <a class="shortcut-card shortcut-card--disabled">
             <div class="shortcut-card__icon shortcut-card__icon--sand">
               <mat-icon>handshake</mat-icon>
@@ -530,6 +542,7 @@ import {
     .shortcut-card__icon--blue { background: color-mix(in srgb, var(--color-primary) 15%, var(--color-bg-card)); color: var(--color-primary); }
     .shortcut-card__icon--lilac { background: color-mix(in srgb, var(--color-highlight) 20%, var(--color-bg-card)); color: var(--color-highlight); }
     .shortcut-card__icon--sand { background: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg-card)); color: var(--color-warning); }
+    .shortcut-card__icon--mint { background: color-mix(in srgb, var(--color-income) 15%, var(--color-bg-card)); color: var(--color-income); }
     .shortcut-card__label { color: var(--color-text-primary); }
   `],
 })
