@@ -1,0 +1,189 @@
+<div class="settlement-page">
+
+  <!-- ===== HEADER ===== -->
+  <header class="settlement-header">
+    <div class="brand">
+      <div class="brand__logo">G</div>
+      <div>
+        <b class="brand__name">Gastos do Casal</b>
+        <small class="brand__sub">acerto de contas</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button mat-icon-button
+              [matTooltip]="theme.isDark() ? 'Modo claro' : 'Modo escuro'"
+              (click)="theme.toggle()">
+        <mat-icon>{{ theme.isDark() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <a routerLink="/dashboard" mat-icon-button matTooltip="Painel">
+        <mat-icon>home</mat-icon>
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== BARRA DE CARREGAMENTO ===== -->
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+  }
+
+  <div class="settlement-content">
+
+    <!-- ===== NAVEGAÇÃO DO MÊS ===== -->
+    <div class="month-nav">
+      <button mat-icon-button (click)="previousMonth()" matTooltip="Mês anterior">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <h2 class="month-nav__label">{{ monthLabel() }}</h2>
+      <button mat-icon-button (click)="nextMonth()" matTooltip="Próximo mês">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    @if (!loading() && data()) {
+
+      <!-- ===== CARD PRINCIPAL — RESUMO ===== -->
+      <div class="main-card card">
+
+        <!-- Total do mês -->
+        <div class="main-card__total">
+          <span class="main-card__total-label">Total de despesas no mês</span>
+          <span class="main-card__total-amount">
+            {{ formatCurrency(data()!.totalExpense) }}
+          </span>
+        </div>
+
+        <!-- Status: Acertado -->
+        @if (data()!.settled) {
+          <div class="status-badge status-badge--settled">
+            <mat-icon>check_circle</mat-icon>
+            Acertado
+          </div>
+        }
+
+        <!-- Status: Pendência proporcional -->
+        @if (data()!.pendingProportional) {
+          <div class="alert-pending">
+            <mat-icon class="alert-pending__icon">warning</mat-icon>
+            <p class="alert-pending__msg">{{ data()!.pendingMessage }}</p>
+          </div>
+        }
+
+        <!-- Destaque do débito — só exibe quando há amountOwed e não está pendente -->
+        @if (!data()!.settled && !data()!.pendingProportional && data()!.amountOwed !== null) {
+          <div class="debt-highlight">
+            <div class="debt-highlight__row">
+              <span class="debt-highlight__debtor">{{ debtorPerson()?.name }}</span>
+              <span class="debt-highlight__verb">deve</span>
+              <span class="debt-highlight__amount">
+                {{ formatCurrency(data()!.amountOwed!) }}
+              </span>
+              <span class="debt-highlight__preposition">a</span>
+              <span class="debt-highlight__creditor">{{ creditorPerson()?.name }}</span>
+            </div>
+            <p class="debt-highlight__sub">Valor a transferir para acertar este mês</p>
+          </div>
+        }
+
+        <!-- Equilibrado (amountOwed = 0 mas não settled) -->
+        @if (!data()!.settled && !data()!.pendingProportional && data()!.amountOwed === 0) {
+          <div class="status-badge status-badge--balanced">
+            <mat-icon>balance</mat-icon>
+            Despesas equilibradas — nenhuma transferência necessária
+          </div>
+        }
+      </div>
+
+      <!-- ===== CARDS POR PESSOA ===== -->
+      @if (!data()!.pendingProportional) {
+        <div class="persons-grid">
+
+          <!-- Person A -->
+          <div class="person-card card">
+            <h3 class="person-card__name">{{ data()!.personA.name }}</h3>
+            <div class="person-card__rows">
+              <div class="person-card__row">
+                <span class="person-card__label">Pagou</span>
+                <span class="person-card__value">
+                  {{ formatCurrency(data()!.personA.totalPaid) }}
+                </span>
+              </div>
+              <div class="person-card__row">
+                <span class="person-card__label">Deveria pagar</span>
+                <span class="person-card__value">
+                  {{ formatCurrency(data()!.personA.shouldPay) }}
+                </span>
+              </div>
+              <div class="person-card__divider"></div>
+              <div class="person-card__row person-card__row--balance">
+                <span class="person-card__label">Saldo</span>
+                <span class="person-card__balance"
+                      [class.balance--positive]="data()!.personA.balance >= 0"
+                      [class.balance--negative]="data()!.personA.balance < 0">
+                  {{ formatBalance(data()!.personA.balance) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Person B -->
+          <div class="person-card card">
+            <h3 class="person-card__name">{{ data()!.personB.name }}</h3>
+            <div class="person-card__rows">
+              <div class="person-card__row">
+                <span class="person-card__label">Pagou</span>
+                <span class="person-card__value">
+                  {{ formatCurrency(data()!.personB.totalPaid) }}
+                </span>
+              </div>
+              <div class="person-card__row">
+                <span class="person-card__label">Deveria pagar</span>
+                <span class="person-card__value">
+                  {{ formatCurrency(data()!.personB.shouldPay) }}
+                </span>
+              </div>
+              <div class="person-card__divider"></div>
+              <div class="person-card__row person-card__row--balance">
+                <span class="person-card__label">Saldo</span>
+                <span class="person-card__balance"
+                      [class.balance--positive]="data()!.personB.balance >= 0"
+                      [class.balance--negative]="data()!.personB.balance < 0">
+                  {{ formatBalance(data()!.personB.balance) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+      <!-- ===== LEGENDA ===== -->
+      <div class="legend card">
+        <mat-icon class="legend__icon">info</mat-icon>
+        <p class="legend__text">
+          O acerto considera todas as parcelas com vencimento neste mês,
+          independente de quando a compra foi feita.
+          Despesas com divisão proporcional usam a proporção das receitas individuais do mês.
+        </p>
+      </div>
+
+    } @else if (!loading()) {
+
+      <!-- Estado vazio (nenhum dado ainda) -->
+      <div class="empty-state">
+        <div class="empty-state__icon">
+          <mat-icon>handshake</mat-icon>
+        </div>
+        <p class="empty-state__title">Nenhum dado de acerto para este mês.</p>
+        <p class="empty-state__sub">
+          Adicione lançamentos de despesas para calcular o acerto entre as pessoas.
+        </p>
+        <a routerLink="/transactions" mat-stroked-button class="empty-state__btn">
+          <mat-icon>add</mat-icon>
+          Ir para lançamentos
+        </a>
+      </div>
+
+    }
+
+  </div><!-- /settlement-content -->
+</div>

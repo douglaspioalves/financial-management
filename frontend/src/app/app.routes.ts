@@ -37,5 +37,11 @@ export const routes: Routes = [
     loadChildren: () =>
       import('./recurring/recurring.routes').then(m => m.recurringRoutes),
   },
+  {
+    path: 'settlement',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./settlement/settlement.routes').then(m => m.settlementRoutes),
+  },
   { path: '**', redirectTo: '/dashboard' },
 ];

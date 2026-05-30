@@ -1,0 +1,376 @@
+.settlement-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  font-family: var(--font-body);
+  padding-bottom: 48px;
+}
+
+// ─── Header ────────────────────────────────────────────────────────────────────
+.settlement-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: block;
+}
+
+.brand__sub {
+  font-size: 0.7rem;
+  color: var(--color-text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+}
+
+// ─── Loading ───────────────────────────────────────────────────────────────────
+.loading-bar {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+}
+
+// ─── Conteúdo ──────────────────────────────────────────────────────────────────
+.settlement-content {
+  padding: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+// ─── Navegação de mês ──────────────────────────────────────────────────────────
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0 20px;
+}
+
+.month-nav__label {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+  min-width: 200px;
+  text-align: center;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+// ─── Card principal ────────────────────────────────────────────────────────────
+.main-card {
+  padding: 24px 20px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.main-card__total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.main-card__total-label {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.main-card__total-amount {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+}
+
+// ─── Chip de status "Acertado" ────────────────────────────────────────────────
+.status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.95rem;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &--settled {
+    background: color-mix(in srgb, var(--color-income) 16%, var(--color-bg-card));
+    color: #4a9e78;
+
+    mat-icon { color: var(--color-income); }
+  }
+
+  &--balanced {
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
+    color: var(--color-primary);
+
+    mat-icon { color: var(--color-primary); }
+  }
+}
+
+// ─── Alerta de pendência proporcional ─────────────────────────────────────────
+.alert-pending {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: color-mix(in srgb, var(--color-expense) 12%, var(--color-bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-expense) 30%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+
+.alert-pending__icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: var(--color-expense);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.alert-pending__msg {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  line-height: 1.5;
+}
+
+// ─── Destaque do débito ────────────────────────────────────────────────────────
+.debt-highlight {
+  background: color-mix(in srgb, var(--color-warning) 14%, var(--color-bg-card));
+  border: 1px solid color-mix(in srgb, var(--color-warning) 35%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 20px;
+  text-align: center;
+}
+
+.debt-highlight__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.debt-highlight__debtor,
+.debt-highlight__creditor {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.debt-highlight__verb,
+.debt-highlight__preposition {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+.debt-highlight__amount {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--color-expense);
+  letter-spacing: -0.03em;
+}
+
+.debt-highlight__sub {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+}
+
+// ─── Grade de pessoas ──────────────────────────────────────────────────────────
+.persons-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  @media (min-width: 560px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.person-card {
+  padding: 18px 16px;
+}
+
+.person-card__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin: 0 0 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.person-card__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.person-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.person-card__label {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.person-card__value {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.person-card__divider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 2px 0;
+}
+
+.person-card__row--balance {
+  padding-top: 4px;
+}
+
+.person-card__balance {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  &.balance--positive { color: var(--color-income); }
+  &.balance--negative { color: var(--color-expense); }
+}
+
+// ─── Legenda ───────────────────────────────────────────────────────────────────
+.legend {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.legend__icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-disabled);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.legend__text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+// ─── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px 48px;
+  text-align: center;
+  gap: 8px;
+}
+
+.empty-state__icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg-card));
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: var(--color-primary);
+  }
+}
+
+.empty-state__title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.empty-state__sub {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.empty-state__btn {
+  margin-top: 8px;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
