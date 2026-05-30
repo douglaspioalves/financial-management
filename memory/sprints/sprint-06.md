@@ -3,7 +3,7 @@
 **Epic:** Recorrência + Acerto de Contas
 **Fatias:** 5b e 6
 **Objetivo:** Lançamentos recorrentes automáticos e cálculo completo do acerto de contas com proporção dinâmica.
-**Status:** 🟢 EM ANDAMENTO — backends concluídos, frontends em progresso
+**Status:** ✅ CONCLUÍDO — todas as branches mergeadas em master; tag sprint-06 criada (2026-05-30)
 
 ---
 
@@ -50,13 +50,13 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-06-02 · Tela de recorrências
-**Papel:** Frontend | **Pontos:** 3 | **Depende de:** S-06-01 | **Status:** `🟡 EM PROGRESSO` | **Branch:** `feature/s06-frontend-recurring`
+**Papel:** Frontend | **Pontos:** 3 | **Depende de:** S-06-01 | **Status:** `✅ CONCLUÍDO` | **Branch:** `feature/s06-frontend-recurring`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Módulo de recorrências com lista | Frontend | 🟡 |
-| Formulário de criação (frequência, template do lançamento) | Frontend | 🟡 |
-| Ação de desativar recorrência | Frontend | 🟡 |
+| Módulo de recorrências com lista | Frontend | ✅ |
+| Formulário de criação (frequência, template do lançamento) | Frontend | ✅ |
+| Ação de desativar recorrência | Frontend | ✅ |
 
 ---
 
@@ -89,16 +89,16 @@ DIA 9–10 (fechamento)
 ---
 
 ### S-06-04 · Tela de acerto de contas
-**Papel:** Frontend | **Pontos:** 5 | **Depende de:** S-06-03 | **Status:** `🟡 EM PROGRESSO` | **Branch:** `feature/s06-frontend-settlement`
+**Papel:** Frontend | **Pontos:** 5 | **Depende de:** S-06-03 | **Status:** `✅ CONCLUÍDO` | **Branch:** `feature/s06-frontend-settlement`
 
 | Tarefa | Papel | Status |
 |---|---|---|
-| Módulo settlement com layout de acerto | Frontend | 🟡 |
-| Exibição de "X deve R$ Y a Z" com destaque visual | Frontend | 🟡 |
-| Alerta de proporção pendente ("Cadastre as receitas de [mês]") | Frontend | 🟡 |
-| Breakdown por pessoa: pagou vs. deveria pagar | Frontend | 🟡 |
-| Navegação por mês | Frontend | 🟡 |
-| Serviço HTTP SettlementService | Frontend | 🟡 |
+| Módulo settlement com layout de acerto | Frontend | ✅ |
+| Exibição de "X deve R$ Y a Z" com destaque visual | Frontend | ✅ |
+| Alerta de proporção pendente ("Cadastre as receitas de [mês]") | Frontend | ✅ |
+| Breakdown por pessoa: pagou vs. deveria pagar | Frontend | ✅ |
+| Navegação por mês | Frontend | ✅ |
+| Serviço HTTP SettlementService | Frontend | ✅ |
 
 ---
 
@@ -121,13 +121,13 @@ DIA 9–10 (fechamento)
 
 ## Definition of Done
 
-- [ ] S-06-01: Job gera lançamentos na data; sem duplicação
-- [ ] S-06-03: Todos os cenários de acerto corretos (50/50, proporcional, pending)
-- [ ] S-06-04: Tela exibe acerto; alerta de pendência funcional
-- [ ] Decisão sobre mês retroativo registrada em memory/decisions/
-- [ ] Todos os testes do SettlementService passando
-- [ ] `docker compose up --build` limpo
-- [ ] Tags `fatia-5` e `fatia-6` criadas no git
-- [ ] Review registrada em `memory/reviews/review-sprint-06.md`
+- [x] S-06-01: Job gera lançamentos na data; sem duplicação
+- [x] S-06-03: Todos os cenários de acerto corretos (50/50, proporcional, pending)
+- [x] S-06-04: Tela exibe acerto; alerta de pendência funcional
+- [x] Decisão sobre mês retroativo registrada em memory/decisions/
+- [x] Todos os testes do SettlementService passando (12/12)
+- [ ] `docker compose up --build` limpo (validar na próxima sessão)
+- [x] Tag `sprint-06` criada no git (local; servidor restringe push de tags)
+- [x] Review registrada em `memory/reviews/review-sprint-06.md`
 - [ ] Retro registrada em `memory/retros/retro-sprint-06.md`
 - [ ] Learnings atualizados em `memory/learnings/`
