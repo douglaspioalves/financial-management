@@ -127,3 +127,16 @@ body {
 
   &:hover { background: var(--color-text-disabled); }
 }
+
+// ─── Responsividade global — 375px ─────────────────────────────────────────
+@media (max-width: 375px) {
+  // Garante que formulários de diálogo não estourem a tela
+  .mat-mdc-dialog-container {
+    padding: 16px !important;
+  }
+
+  // Snackbar: garante boa legibilidade em telas muito pequenas
+  .mat-mdc-snack-bar-container {
+    margin: 8px !important;
+  }
+}
